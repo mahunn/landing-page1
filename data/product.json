@@ -1,0 +1,33 @@
+{
+  "title": "Premium Gown One Piece",
+  "description": "Soft premium fabric gown with elegant finish.",
+  "basePrice": 1750,
+  "discountType": "flat",
+  "discountValue": 80,
+  "whatsappNumber": "8801700000000",
+  "callNumber": "8801700000000",
+  "variants": [
+    {
+      "colorName": "Navy Blue",
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/uploads/1777995365434-Screenshot_2026-05-05_022941.png"
+      ]
+    },
+    {
+      "colorName": "Olive Green",
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1495385794356-15371f348c31?q=80&w=1200&auto=format&fit=crop"
+      ]
+    }
+  ]
+}
