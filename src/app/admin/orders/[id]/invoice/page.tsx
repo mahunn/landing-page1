@@ -30,7 +30,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
       <article className="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 print:rounded-none print:shadow-none print:ring-0">
         <header className="border-b border-slate-200 pb-4">
           <h1 className="text-xl font-bold">Glamora ইনভয়েস</h1>
-          <p className="text-sm text-slate-500">অর্ডার #{order.id}</p>
+          <p className="text-sm text-slate-500">অর্ডার {order.id}</p>
           <p className="text-sm text-slate-500">{new Date(order.createdAt).toLocaleString()}</p>
         </header>
 

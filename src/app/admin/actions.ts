@@ -14,8 +14,9 @@ function revalidateAdminPaths(orderId?: string) {
   revalidatePath("/admin/product");
   revalidatePath("/admin/cms");
   if (orderId) {
-    revalidatePath(`/admin/orders/${orderId}`);
-    revalidatePath(`/admin/orders/${orderId}/invoice`);
+    const seg = encodeURIComponent(orderId);
+    revalidatePath(`/admin/orders/${seg}`);
+    revalidatePath(`/admin/orders/${seg}/invoice`);
   }
 }
 

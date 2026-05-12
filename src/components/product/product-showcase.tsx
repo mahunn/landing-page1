@@ -107,21 +107,21 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-100 via-stone-50 to-zinc-100 text-zinc-900">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-gradient-to-r from-zinc-900 via-zinc-900 to-violet-950 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.35)]">
+      <header className="sticky top-0 z-30 border-b border-violet-200/60 bg-gradient-to-b from-white to-violet-50/90 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_6px_20px_-8px_rgba(91,33,182,0.12)] backdrop-blur-md">
         <div className="container-page flex min-h-14 items-center justify-between gap-3 py-2.5">
           <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.jpeg"
               alt={companyName}
-              className="h-10 w-10 rounded-full object-cover shadow-lg ring-2 ring-white/90 ring-offset-2 ring-offset-zinc-900"
+              className="h-10 w-10 rounded-full object-cover shadow-md ring-2 ring-white ring-offset-2 ring-offset-violet-100"
             />
-            <p className="font-display text-lg font-semibold tracking-tight text-white drop-shadow-sm">{companyName}</p>
+            <p className="font-display text-lg font-semibold tracking-tight text-violet-800">{companyName}</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href={callLink}
-              className="hidden items-center gap-1.5 text-sm text-zinc-300 transition hover:text-white sm:flex"
+              className="hidden items-center gap-1.5 text-sm text-slate-600 transition hover:text-violet-800 sm:flex"
             >
               <span aria-hidden>📞</span>
               <span className="font-medium tabular-nums">{displayContact}</span>

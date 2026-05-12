@@ -74,6 +74,21 @@ export async function readOrders(): Promise<OrderData[]> {
   }
 }
 
+/** New orders use `#00001` … `#99999` (zero-padded). Legacy `HEN-*` ids are unchanged. */
+const SERIAL_ORDER_ID = /^#(\d+)$/;
+
+function nextSerialOrderId(orders: OrderData[]): string {
+  let max = 0;
+  for (const o of orders) {
+    const m = SERIAL_ORDER_ID.exec(o.id.trim());
+    if (!m) continue;
+    const n = parseInt(m[1], 10);
+    if (!Number.isNaN(n) && n > max) max = n;
+  }
+  const next = max + 1;
+  return `#${String(next).padStart(5, "0")}`;
+}
+
 export async function writeOrders(orders: OrderData[]): Promise<void> {
   const json = JSON.stringify(orders, null, 2);
   if (useBlobJsonPersistence()) {
@@ -95,7 +110,7 @@ export async function createOrder(
   const orders = await readOrders();
   const order: OrderData = {
     ...payload,
-    id: `HEN-${Math.floor(10000 + Math.random() * 90000)}`,
+    id: nextSerialOrderId(orders),
     status: "pending",
     createdAt: new Date().toISOString()
   };
