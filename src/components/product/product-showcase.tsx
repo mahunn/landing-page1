@@ -94,7 +94,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
   const reviewCountBn = toBanglaDigits(Math.max(product.reviews.length * 15, 45));
   const displayedReviews = product.reviews.slice(0, 3);
-  const reviewCardTones = ["bg-amber-50", "bg-sky-50", "bg-pink-50"] as const;
+  const reviewCardTones = ["bg-amber-50", "bg-sky-50", "bg-violet-50"] as const;
 
   const goPrevImage = () => {
     if (images.length === 0) return;
@@ -106,25 +106,29 @@ export function ProductShowcase({ product }: { product: ProductData }) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm">
+    <main className="min-h-screen bg-gradient-to-b from-zinc-100 via-stone-50 to-zinc-100 text-zinc-900">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-gradient-to-r from-zinc-900 via-zinc-900 to-violet-950 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.35)]">
         <div className="container-page flex min-h-14 items-center justify-between gap-3 py-2.5">
           <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.jpeg" alt={companyName} className="h-9 w-9 rounded-full object-cover ring-1 ring-slate-200" />
-            <p className="font-display text-lg font-semibold text-pink-600">{companyName}</p>
+            <img
+              src="/logo.jpeg"
+              alt={companyName}
+              className="h-10 w-10 rounded-full object-cover shadow-lg ring-2 ring-white/90 ring-offset-2 ring-offset-zinc-900"
+            />
+            <p className="font-display text-lg font-semibold tracking-tight text-white drop-shadow-sm">{companyName}</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href={callLink}
-              className="hidden items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 sm:flex"
+              className="hidden items-center gap-1.5 text-sm text-zinc-300 transition hover:text-white sm:flex"
             >
               <span aria-hidden>📞</span>
-              <span className="font-medium">{displayContact}</span>
+              <span className="font-medium tabular-nums">{displayContact}</span>
             </a>
             <a
               href={whatsappLink}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-900/20 transition hover:bg-[#20BD5A] hover:shadow-lg"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/15 transition hover:bg-[#20BD5A] hover:shadow-lg"
             >
               <WhatsAppIcon className="h-5 w-5 shrink-0 text-white" />
               WhatsApp
@@ -150,7 +154,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <div className="flex h-full items-center justify-center text-sm text-slate-400">কোনো ছবি নেই</div>
                 )}
                 {discountBadgeBn ? (
-                  <span className="absolute left-3 top-3 rounded-lg bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+                  <span className="absolute left-3 top-3 rounded-lg bg-orange-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
                     {discountBadgeBn}
                   </span>
                 ) : null}
@@ -190,7 +194,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                         type="button"
                         onClick={() => setImageIndex(idx)}
                         className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                          idx === imageIndex ? "border-pink-500 shadow-md ring-2 ring-pink-100" : "border-slate-200 opacity-90 hover:opacity-100"
+                          idx === imageIndex ? "border-violet-500 shadow-md ring-2 ring-violet-100" : "border-slate-200 opacity-90 hover:opacity-100"
                         }`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -206,9 +210,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
           {/* Right: details + selection + form */}
           <div className="space-y-6">
             <div className="rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ring-1 ring-slate-100 md:p-6">
-              <p className="text-sm font-semibold text-pink-600">{companyName}</p>
+              <p className="text-sm font-semibold text-violet-600">{companyName}</p>
               <h1 className="font-display mt-1 text-2xl font-bold leading-tight text-slate-900 md:text-3xl">{product.title}</h1>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-amber-500">
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-orange-400">
                 <span className="text-base tracking-tight">★★★★★</span>
                 <span className="text-sm text-slate-500">({reviewCountBn} রিভিউ)</span>
               </div>
@@ -217,18 +221,18 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 {product.discountType !== "none" ? (
                   <p className="text-lg text-slate-400 line-through">{toMoney(product.basePrice)}</p>
                 ) : null}
-                <p className="text-3xl font-bold text-pink-600 md:text-4xl">{toMoney(discountedPrice)}</p>
+                <p className="text-3xl font-bold text-violet-600 md:text-4xl">{toMoney(discountedPrice)}</p>
                 {product.discountType === "percent" ? (
-                  <span className="rounded-md bg-red-600 px-2 py-0.5 text-xs font-bold text-white">-{toBanglaDigits(Math.round(product.discountValue))}%</span>
+                  <span className="rounded-md bg-orange-600 px-2 py-0.5 text-xs font-bold text-white">-{toBanglaDigits(Math.round(product.discountValue))}%</span>
                 ) : savedAmount > 0 ? (
-                  <span className="rounded-md bg-red-600 px-2 py-0.5 text-xs font-bold text-white">ছাড়</span>
+                  <span className="rounded-md bg-orange-600 px-2 py-0.5 text-xs font-bold text-white">ছাড়</span>
                 ) : null}
               </div>
               {savedAmount > 0 ? (
                 <p className="mt-1 text-xs text-slate-500">আপনি সাশ্রয় করছেন {toMoney(savedAmount)}</p>
               ) : null}
 
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800">
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal-900">
                 <span>✓</span>
                 <span>স্টকে আছে</span>
               </div>
@@ -237,7 +241,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 <ul className="mt-5 space-y-2 border-t border-slate-100 pt-5">
                   {featureLines.map((line) => (
                     <li key={line} className="flex gap-2 text-sm text-slate-700">
-                      <span className="shrink-0 text-pink-500" aria-hidden>
+                      <span className="shrink-0 text-violet-500" aria-hidden>
                         👗
                       </span>
                       <span>{line}</span>
@@ -248,7 +252,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
               <a
                 href="#order-form"
-                className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3.5 text-base font-bold text-slate-900 shadow-sm transition hover:bg-amber-300"
+                className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-orange-900/15 transition hover:bg-orange-400"
               >
                 <span aria-hidden>🛒</span>
                 অর্ডার করুন
@@ -258,9 +262,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 <a
                   href={callLink}
                   aria-label={`কল করুন ${displayContact}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-red-600 px-3.5 py-2 pl-3 text-sm font-semibold text-white shadow-sm transition hover:bg-red-500"
+                  className="inline-flex items-center gap-2 rounded-full bg-orange-700 px-3.5 py-2 pl-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
                 >
-                  <svg className="h-4 w-4 shrink-0 text-pink-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <svg className="h-4 w-4 shrink-0 text-orange-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -312,12 +316,12 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                         setImageIndex(0);
                       }}
                       className={`flex min-h-[4.5rem] w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition ${
-                        selected ? "border-pink-500 bg-pink-50/60 ring-2 ring-pink-100" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                        selected ? "border-violet-500 bg-violet-50/60 ring-2 ring-violet-100" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                     >
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 ${
-                          selected ? "border-pink-600 bg-pink-600 text-white" : "border-slate-300 bg-white"
+                          selected ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 bg-white"
                         }`}
                         aria-hidden
                       >
@@ -329,10 +333,10 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                           {product.discountType !== "none" ? (
                             <>
                               <span className="line-through">{toMoney(product.basePrice)}</span>{" "}
-                              <span className="font-semibold text-pink-600">{toMoney(discountedPrice)}</span>
+                              <span className="font-semibold text-violet-600">{toMoney(discountedPrice)}</span>
                             </>
                           ) : (
-                            <span className="font-semibold text-pink-600">{toMoney(discountedPrice)}</span>
+                            <span className="font-semibold text-violet-600">{toMoney(discountedPrice)}</span>
                           )}
                         </p>
                       </div>
@@ -354,7 +358,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                     type="button"
                     key={s}
                     className={`min-h-12 min-w-[3rem] rounded-xl border-2 px-4 py-2 text-sm font-bold transition ${
-                      s === size ? "border-pink-500 bg-pink-50 text-pink-700" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                      s === size ? "border-violet-500 bg-violet-50 text-violet-700" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                     }`}
                     onClick={() => setSize(s)}
                   >
@@ -383,7 +387,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <input
                     name="customerName"
                     placeholder="আপনার পূর্ণ নাম"
-                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
                     required
                   />
                 </div>
@@ -394,7 +398,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <input
                     name="customerPhone"
                     placeholder="01XXXXXXXXX"
-                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
                     required
                   />
                 </div>
@@ -407,7 +411,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 <textarea
                   name="customerAddress"
                   placeholder="বাড়ি, রোড, এলাকা, থানা, জেলা"
-                  className="h-28 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                  className="h-28 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
                   required
                 />
               </div>
@@ -417,12 +421,12 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   ডেলিভারি এরিয়া <span className="text-red-500">*</span>
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
-                    <input type="radio" name="deliveryZone" value="outside" defaultChecked className="h-4 w-4 accent-pink-600" required />
+                  <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50">
+                    <input type="radio" name="deliveryZone" value="outside" defaultChecked className="h-4 w-4 accent-violet-600" required />
                     <span className="text-sm font-medium text-slate-800">ঢাকা সিটির বাইরে (১৫০ টাকা)</span>
                   </label>
-                  <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 has-[:checked]:border-pink-500 has-[:checked]:bg-pink-50">
-                    <input type="radio" name="deliveryZone" value="inside" className="h-4 w-4 accent-pink-600" />
+                  <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50">
+                    <input type="radio" name="deliveryZone" value="inside" className="h-4 w-4 accent-violet-600" />
                     <span className="text-sm font-medium text-slate-800">ঢাকা সিটির ভিতরে (৮০ টাকা)</span>
                   </label>
                 </div>
@@ -438,7 +442,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                     name="quantity"
                     min={1}
                     defaultValue={1}
-                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
                   />
                 </div>
                 <div>
@@ -446,7 +450,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <input
                     name="note"
                     placeholder="বিশেষ নির্দেশনা"
-                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
                   />
                 </div>
               </div>
@@ -473,12 +477,12 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               </div>
 
               {orderState.error ? <p className="text-sm text-red-600">{orderState.error}</p> : null}
-              {orderState.success ? <p className="text-sm text-emerald-600">{orderState.success}</p> : null}
+              {orderState.success ? <p className="text-sm text-teal-700">{orderState.success}</p> : null}
 
               <button
                 type="submit"
                 disabled={orderPending || !size}
-                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3.5 text-base font-bold text-white shadow-sm hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-indigo-900/20 hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span aria-hidden>✓</span>
                 {orderPending ? "প্রক্রিয়াধীন..." : "অর্ডার কনফার্ম করুন"}
@@ -497,7 +501,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
         <div className="container-page mx-auto max-w-6xl space-y-8 py-10 pb-28 md:space-y-10 md:py-14 md:pb-14">
           <section className="w-full rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ring-1 ring-slate-100 md:p-8 lg:p-10">
             <h2 className="text-center text-lg font-bold text-slate-900 md:text-xl">
-              <span className="text-pink-600" aria-hidden>
+              <span className="text-violet-600" aria-hidden>
                 ❓
               </span>{" "}
               সাধারণ প্রশ্নাবলী
@@ -526,7 +530,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
           {displayedReviews.length > 0 ? (
             <section className="w-full rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ring-1 ring-slate-100 md:p-8 lg:p-10">
               <h2 className="text-center text-lg font-bold text-slate-900 md:text-xl">
-                <span className="text-amber-500" aria-hidden>
+                <span className="text-orange-400" aria-hidden>
                   ⭐
                 </span>{" "}
                 গ্রাহক মতামত
@@ -537,7 +541,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                     key={`${rev.author}-${idx}`}
                     className={`flex flex-col rounded-2xl border border-slate-100 p-4 md:p-5 ${reviewCardTones[idx % reviewCardTones.length]}`}
                   >
-                    <p className="text-amber-500">{Array.from({ length: Math.min(5, rev.rating) }).map(() => "★").join("")}</p>
+                    <p className="text-orange-400">{Array.from({ length: Math.min(5, rev.rating) }).map(() => "★").join("")}</p>
                     <p className="mt-2 text-sm font-semibold text-slate-900 md:text-base">খুবই সন্তুষ্ট!</p>
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700 md:text-[15px]">{rev.text}</p>
                     <p className="mt-4 text-xs font-semibold text-slate-600 md:text-sm">
@@ -553,15 +557,15 @@ export function ProductShowcase({ product }: { product: ProductData }) {
           <div className="w-full rounded-2xl bg-white px-4 py-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 md:rounded-3xl md:px-8 md:py-10">
             <div className="mx-auto grid max-w-4xl grid-cols-3 gap-4 text-center md:gap-8">
               <div>
-                <p className="text-2xl font-bold text-pink-600 md:text-3xl">৫.০</p>
+                <p className="text-2xl font-bold text-violet-600 md:text-3xl">৫.০</p>
                 <p className="mt-1 text-xs font-medium text-slate-600 md:text-sm">গড় রেটিং</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-emerald-600 md:text-3xl">১২০০+</p>
+                <p className="text-2xl font-bold text-teal-600 md:text-3xl">১২০০+</p>
                 <p className="mt-1 text-xs font-medium text-slate-600 md:text-sm">সন্তুষ্ট গ্রাহক</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-sky-500 md:text-3xl">৯৯%</p>
+                <p className="text-2xl font-bold text-cyan-600 md:text-3xl">৯৯%</p>
                 <p className="mt-1 text-xs font-medium text-slate-600 md:text-sm">ইতিবাচক রিভিউ</p>
               </div>
             </div>
@@ -574,7 +578,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.35]"
           style={{
-            backgroundImage: "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(244,114,182,0.12), transparent 55%)"
+            backgroundImage: "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139,92,246,0.14), transparent 55%)"
           }}
         />
         <div className="container-page relative mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-20 lg:py-24">
@@ -595,9 +599,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
               <a
                 href={callLink}
-                className="group mt-8 inline-flex items-center gap-3 text-base font-medium tracking-tight text-white transition hover:text-pink-200"
+                className="group mt-8 inline-flex items-center gap-3 text-base font-medium tracking-tight text-white transition hover:text-orange-200"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-500/15 text-pink-400 ring-1 ring-pink-400/30 transition group-hover:bg-pink-500/25">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20 text-orange-300 ring-1 ring-orange-400/35 transition group-hover:bg-orange-500/30">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                     <path
                       strokeLinecap="round"
@@ -613,24 +617,26 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 ক্যাশ অন ডেলিভারি <span className="mx-2 text-slate-600">|</span> সারাদেশে ডেলিভারি
               </p>
 
-              <div className="mt-10 h-px w-16 bg-gradient-to-r from-pink-500/60 to-transparent" aria-hidden />
+              <div className="mt-10 h-px w-16 bg-gradient-to-r from-orange-400/70 to-transparent" aria-hidden />
 
               <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.22em] text-slate-600">
                 © {new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 lg:items-end lg:text-right">
+            <div className="flex flex-col gap-3 lg:items-end lg:text-right">
               <p className="text-[10px] font-semibold uppercase tracking-[0.38em] text-slate-500">Developed by</p>
               <a
                 href="https://mahinahmad.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex max-w-sm items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 pr-5 shadow-[0_1px_0_0_rgba(255,255,255,0.06)_inset,0_24px_48px_-24px_rgba(0,0,0,0.5)] backdrop-blur-sm transition hover:border-pink-400/25 hover:bg-white/[0.07] lg:ml-auto"
+                className="group flex max-w-sm items-center gap-4 rounded-2xl border border-transparent bg-transparent p-0 transition lg:ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400/60"
               >
-                <div className="min-w-0 flex-1 text-left">
-                  <p className="font-display text-lg font-semibold text-white">Mahin Ahmad</p>
-                  <p className="mt-0.5 text-xs font-medium tracking-wide text-slate-500 transition group-hover:text-pink-200/90">
+                <div className="min-w-0 flex-1 text-left lg:text-right">
+                  <p className="font-display text-lg font-semibold text-red-400 transition group-hover:text-red-300">
+                    Mahin Ahmad
+                  </p>
+                  <p className="mt-0.5 text-xs font-medium tracking-wide text-red-500/85 transition group-hover:text-red-400">
                     mahinahmad.com
                   </p>
                 </div>
@@ -640,7 +646,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   alt="Mahin Ahmad"
                   width={56}
                   height={56}
-                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-white/10 transition group-hover:ring-pink-400/30"
+                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-red-500/20 transition group-hover:ring-red-400/45"
                 />
               </a>
             </div>
@@ -660,7 +666,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
         <div className="container-page flex gap-2">
           <a
             href="#order-form"
-            className="min-h-12 flex-1 rounded-2xl bg-amber-400 px-3 py-3 text-center text-sm font-bold text-slate-900"
+            className="min-h-12 flex-1 rounded-2xl bg-orange-500 px-3 py-3 text-center text-sm font-bold text-white shadow-md"
           >
             অর্ডার করুন
           </a>

@@ -40,7 +40,7 @@ export function LoginForm() {
 
       {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
 
-      <button type="submit" disabled={pending} className="w-full rounded-lg bg-pink-600 px-4 py-2 font-medium text-white hover:bg-pink-500 disabled:opacity-60">
+      <button type="submit" disabled={pending} className="w-full rounded-lg bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500 disabled:opacity-60">
         {pending ? "প্রবেশ করা হচ্ছে..." : "লগইন করুন"}
       </button>
     </form>

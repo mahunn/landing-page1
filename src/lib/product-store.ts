@@ -1,5 +1,11 @@
 import { promises as fs } from "fs";
 import path from "path";
+import {
+  PRODUCT_JSON_BLOB_PATH,
+  readTextBlob,
+  useBlobJsonPersistence,
+  writeTextBlob
+} from "@/lib/vercel-blob-json";
 
 export type ProductVariant = {
   colorName: string;
@@ -127,7 +133,30 @@ async function ensureDataFile() {
   }
 }
 
+async function readProductFromDisk(): Promise<ProductData | null> {
+  try {
+    const content = await fs.readFile(DATA_FILE, "utf-8");
+    return normalizeProductData(JSON.parse(content) as Partial<ProductData>);
+  } catch {
+    return null;
+  }
+}
+
 export async function readProductData(): Promise<ProductData> {
+  if (useBlobJsonPersistence()) {
+    const fromBlob = await readTextBlob(PRODUCT_JSON_BLOB_PATH);
+    if (fromBlob) {
+      try {
+        return normalizeProductData(JSON.parse(fromBlob) as Partial<ProductData>);
+      } catch {
+        // Corrupt blob: fall through to disk / defaults.
+      }
+    }
+    const fromDisk = await readProductFromDisk();
+    if (fromDisk) return fromDisk;
+    return defaultData;
+  }
+
   await ensureDataFile();
   const content = await fs.readFile(DATA_FILE, "utf-8");
   try {
@@ -139,6 +168,16 @@ export async function readProductData(): Promise<ProductData> {
 }
 
 export async function writeProductData(data: ProductData): Promise<void> {
+  const json = JSON.stringify(data, null, 2);
+  if (useBlobJsonPersistence()) {
+    await writeTextBlob(PRODUCT_JSON_BLOB_PATH, json);
+    return;
+  }
+  if (process.env.VERCEL) {
+    throw new Error(
+      "Vercel: add BLOB_READ_WRITE_TOKEN (Storage → Blob in the Vercel dashboard). The server filesystem is read-only, so product/FAQ saves require Blob."
+    );
+  }
   await ensureDataFile();
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
+  await fs.writeFile(DATA_FILE, json, "utf-8");
 }

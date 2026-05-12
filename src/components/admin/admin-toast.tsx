@@ -27,8 +27,8 @@ export function AdminToast() {
   }, [message, pathname, router, searchParams]);
 
   const classes = useMemo(() => {
-    if (tone === "error") return "bg-rose-600";
-    return "bg-emerald-600";
+    if (tone === "error") return "bg-red-600";
+    return "bg-success-600";
   }, [tone]);
 
   if (!message || !visible) return null;

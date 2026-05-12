@@ -134,7 +134,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           <button className="admin-btn-primary">স্ট্যাটাস আপডেট</button>
         </form>
         <div className="mt-3 flex flex-wrap gap-2">
-          <a href={whatsappHref} className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-medium text-white">
+          <a href={whatsappHref} className="rounded-md bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#20BD5A]">
             WhatsApp কাস্টমার
           </a>
           <a href={callHref} className="rounded-md bg-blue-500 px-3 py-2 text-sm font-medium text-white">
@@ -155,7 +155,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             </form>
             <a
               href={deliveredWhatsappHref}
-              className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white"
+              className="rounded-md bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#20BD5A]"
             >
               ডেলিভারি মেসেজ পাঠান
             </a>
@@ -175,14 +175,14 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <button className="admin-btn-primary">নোট সেভ করুন</button>
           </form>
         </div>
-        <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3">
-          <p className="text-sm font-semibold text-rose-700">বিপদজনক অ্যাকশন</p>
+        <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3">
+          <p className="text-sm font-semibold text-red-800">বিপদজনক অ্যাকশন</p>
           <form action={deleteOrder} className="mt-2">
             <input type="hidden" name="orderId" value={order.id} />
             <input type="hidden" name="returnTo" value="/admin/orders" />
             <ConfirmSubmitButton
               label="অর্ডার ডিলিট"
-              className="rounded-md bg-rose-600 px-3 py-2 text-sm font-medium text-white"
+              className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white"
               confirmText="আপনি কি নিশ্চিতভাবে এই অর্ডারটি ডিলিট করতে চান?"
             />
           </form>

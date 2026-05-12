@@ -4,7 +4,7 @@
 
 body {
   font-family: var(--font-ui), Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-zinc-100 text-zinc-900;
 }
 
 .container-page {
@@ -12,19 +12,19 @@ body {
 }
 
 .admin-card {
-  @apply rounded-3xl bg-white p-4 md:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100;
+  @apply rounded-3xl bg-white p-4 md:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-zinc-200/80;
 }
 
 .admin-btn-primary {
-  @apply min-h-12 rounded-2xl bg-gradient-to-b from-pink-500 to-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:from-pink-400 hover:to-pink-500;
+  @apply min-h-12 rounded-2xl bg-gradient-to-b from-violet-600 to-indigo-700 px-4 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-violet-500 hover:to-indigo-600;
 }
 
 .admin-btn-dark {
-  @apply min-h-12 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white;
+  @apply min-h-12 rounded-2xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800;
 }
 
 .admin-input {
-  @apply min-h-12 w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 text-sm outline-none focus:border-pink-200 focus:bg-white focus:ring-2 focus:ring-pink-100;
+  @apply min-h-12 w-full rounded-2xl border border-transparent bg-zinc-100 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100;
 }
 
 .font-display {

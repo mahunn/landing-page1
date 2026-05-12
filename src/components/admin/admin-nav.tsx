@@ -23,7 +23,7 @@ export function AdminNav() {
             key={item.href}
             className={`min-h-12 rounded-2xl px-4 py-3 font-medium transition ${
               active
-                ? "bg-pink-600 text-white shadow-[0_8px_24px_rgb(233,30,99,0.25)]"
+                ? "bg-violet-600 text-white shadow-[0_8px_24px_rgb(124,58,237,0.3)]"
                 : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
             href={item.href}

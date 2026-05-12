@@ -1,5 +1,11 @@
 import { promises as fs } from "fs";
 import path from "path";
+import {
+  ORDERS_JSON_BLOB_PATH,
+  readTextBlob,
+  useBlobJsonPersistence,
+  writeTextBlob
+} from "@/lib/vercel-blob-json";
 
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "canceled";
 
@@ -31,7 +37,32 @@ async function ensureOrdersFile() {
   }
 }
 
+async function readOrdersFromDisk(): Promise<OrderData[] | null> {
+  try {
+    const content = await fs.readFile(ORDERS_FILE, "utf-8");
+    const parsed = JSON.parse(content) as OrderData[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return null;
+  }
+}
+
 export async function readOrders(): Promise<OrderData[]> {
+  if (useBlobJsonPersistence()) {
+    const fromBlob = await readTextBlob(ORDERS_JSON_BLOB_PATH);
+    if (fromBlob) {
+      try {
+        const parsed = JSON.parse(fromBlob) as OrderData[];
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // Corrupt blob: fall through.
+      }
+    }
+    const fromDisk = await readOrdersFromDisk();
+    if (fromDisk) return fromDisk;
+    return [];
+  }
+
   await ensureOrdersFile();
   const content = await fs.readFile(ORDERS_FILE, "utf-8");
   try {
@@ -44,8 +75,18 @@ export async function readOrders(): Promise<OrderData[]> {
 }
 
 export async function writeOrders(orders: OrderData[]): Promise<void> {
+  const json = JSON.stringify(orders, null, 2);
+  if (useBlobJsonPersistence()) {
+    await writeTextBlob(ORDERS_JSON_BLOB_PATH, json);
+    return;
+  }
+  if (process.env.VERCEL) {
+    throw new Error(
+      "Vercel: add BLOB_READ_WRITE_TOKEN (Storage → Blob). The server filesystem is read-only, so order writes require Blob."
+    );
+  }
   await ensureOrdersFile();
-  await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf-8");
+  await fs.writeFile(ORDERS_FILE, json, "utf-8");
 }
 
 export async function createOrder(
