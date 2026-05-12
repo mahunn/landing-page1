@@ -4,6 +4,7 @@ import { deleteOrder, updateOrderStatus } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import { OrderCopyButtons } from "@/components/admin/order-copy-buttons";
 import { isAuthenticated } from "@/lib/auth";
+import { formatDateTimeDhaka } from "@/lib/datetime-bd";
 import { readOrders } from "@/lib/order-store";
 
 type OrdersPageProps = {
@@ -111,7 +112,7 @@ export default async function AdminOrdersPage({ searchParams }: OrdersPageProps)
                 />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="relative z-10 text-sm font-semibold">{order.id}</p>
-                  <p className="relative z-10 text-xs text-slate-500">{new Date(order.createdAt).toLocaleString()}</p>
+                  <p className="relative z-10 text-xs text-slate-500">{formatDateTimeDhaka(order.createdAt)}</p>
                 </div>
                 <div className="relative z-10 mt-1 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
                   {order.status}

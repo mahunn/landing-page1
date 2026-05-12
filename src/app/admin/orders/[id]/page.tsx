@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { deleteOrder, updateOrderNote, updateOrderStatus } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import { isAuthenticated } from "@/lib/auth";
+import { formatDateTimeDhaka } from "@/lib/datetime-bd";
 import { readOrders } from "@/lib/order-store";
 
 type OrderDetailPageProps = {
@@ -63,7 +64,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <span className="text-slate-500">ঠিকানা:</span> {order.customerAddress}
           </p>
           <p>
-            <span className="text-slate-500">সময়:</span> {new Date(order.createdAt).toLocaleString()}
+            <span className="text-slate-500">সময়:</span> {formatDateTimeDhaka(order.createdAt)}
           </p>
         </div>
       </article>

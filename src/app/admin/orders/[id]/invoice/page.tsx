@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { PrintButton } from "@/components/admin/print-button";
 import { isAuthenticated } from "@/lib/auth";
+import { formatDateTimeDhaka } from "@/lib/datetime-bd";
 import { readOrders } from "@/lib/order-store";
 
 type InvoicePageProps = {
@@ -31,7 +32,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
         <header className="border-b border-slate-200 pb-4">
           <h1 className="text-xl font-bold">Glamora ইনভয়েস</h1>
           <p className="text-sm text-slate-500">অর্ডার {order.id}</p>
-          <p className="text-sm text-slate-500">{new Date(order.createdAt).toLocaleString()}</p>
+          <p className="text-sm text-slate-500">{formatDateTimeDhaka(order.createdAt)}</p>
         </header>
 
         <section className="mt-4 grid gap-4 sm:grid-cols-2">
