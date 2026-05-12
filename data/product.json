@@ -1,11 +1,11 @@
 {
   "title": "Premium Gown One Piece",
   "description": "Soft premium fabric gown with elegant finish.",
-  "basePrice": 1750,
-  "discountType": "flat",
-  "discountValue": 80,
-  "whatsappNumber": "8801700000000",
-  "callNumber": "8801700000000",
+  "basePrice": 1000,
+  "discountType": "percent",
+  "discountValue": 10,
+  "whatsappNumber": "01792110636",
+  "callNumber": "01792110636",
   "variants": [
     {
       "colorName": "Navy Blue",
@@ -15,7 +15,7 @@
         "XL"
       ],
       "images": [
-        "/uploads/1777995365434-Screenshot_2026-05-05_022941.png"
+        "/uploads/1778589689702-WhatsApp_Image_2026-05-12_at_12.20.58_AM.jpeg"
       ]
     },
     {
@@ -26,8 +26,48 @@
         "XL"
       ],
       "images": [
-        "https://images.unsplash.com/photo-1495385794356-15371f348c31?q=80&w=1200&auto=format&fit=crop"
+        "/uploads/1778589687837-WhatsApp_Image_2026-05-12_at_12.20.58_AM__1_.jpeg"
       ]
+    },
+    {
+      "colorName": "Color 3",
+      "sizes": [
+        "M",
+        "L"
+      ],
+      "images": [
+        "/uploads/1778589686495-WhatsApp_Image_2026-05-12_at_12.20.57_AM__1_.jpeg"
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "question": "ডেলিভারি কত দিনে হবে?",
+      "answer": "ঢাকার ভেতরে ১-২ দিন, ঢাকার বাইরে ২-৪ কার্যদিবস।"
+    },
+    {
+      "question": "পেমেন্ট কিভাবে করব?",
+      "answer": "ক্যাশ অন ডেলিভারি এবং বিকাশ/নগদ উভয় অপশন আছে।"
+    }
+  ],
+  "reviews": [
+    {
+      "author": "রিমি",
+      "location": "ঢাকা",
+      "rating": 5,
+      "text": "কাপড়ের কোয়ালিটি খুব ভালো, ছবির মতোই পেয়েছি।"
+    },
+    {
+      "author": "মৌ",
+      "location": "সিলেট",
+      "rating": 5,
+      "text": "ফিটিং ও রঙ দারুণ। ডেলিভারি সময়মতো হয়েছে।"
+    },
+    {
+      "author": "তৃষা",
+      "location": "চট্টগ্রাম",
+      "rating": 4,
+      "text": "প্যাকেজিং সুন্দর ছিল, সার্ভিসও ভালো।"
     }
   ]
 }

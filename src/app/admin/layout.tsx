@@ -1,29 +1,33 @@
 import Link from "next/link";
+import { AdminToast } from "@/components/admin/admin-toast";
+import { AdminNav } from "@/components/admin/admin-nav";
 
 export default async function AdminLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="container-page flex items-center justify-between py-4">
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/85 backdrop-blur-md">
+        <div className="container-page flex flex-wrap items-center justify-between gap-3 py-4">
           <div>
-            <p className="text-sm text-slate-500">Henley</p>
-            <h1 className="text-lg font-semibold">Admin Panel</h1>
+            <p className="text-sm text-slate-500">Glamora</p>
+            <h1 className="text-lg font-semibold text-slate-900">Admin Panel</h1>
           </div>
+          <AdminNav />
           <div className="flex items-center gap-3 text-sm">
             <Link className="text-slate-600 hover:text-slate-900" href="/">
-              View Site
+              সাইট দেখুন
             </Link>
             <form action="/admin/logout" method="post">
-              <button className="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">
-                Logout
+              <button className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-slate-700 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:bg-slate-50">
+                লগআউট
               </button>
             </form>
           </div>
         </div>
       </header>
-      <main className="container-page py-6">{children}</main>
+      <main className="container-page py-4 md:py-6">{children}</main>
+      <AdminToast />
     </div>
   );
 }

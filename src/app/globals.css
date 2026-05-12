@@ -3,9 +3,30 @@
 @tailwind utilities;
 
 body {
+  font-family: var(--font-ui), Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   @apply bg-slate-50 text-slate-900;
 }
 
 .container-page {
   @apply mx-auto max-w-6xl px-4 md:px-6;
+}
+
+.admin-card {
+  @apply rounded-3xl bg-white p-4 md:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100;
+}
+
+.admin-btn-primary {
+  @apply min-h-12 rounded-2xl bg-gradient-to-b from-pink-500 to-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:from-pink-400 hover:to-pink-500;
+}
+
+.admin-btn-dark {
+  @apply min-h-12 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white;
+}
+
+.admin-input {
+  @apply min-h-12 w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 text-sm outline-none focus:border-pink-200 focus:bg-white focus:ring-2 focus:ring-pink-100;
+}
+
+.font-display {
+  font-family: var(--font-display), "Times New Roman", serif;
 }

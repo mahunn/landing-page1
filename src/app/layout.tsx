@@ -1,17 +1,30 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Single Product Landing",
-  description: "Landing page with admin-managed product data"
+  title: "Glamora",
+  description: "Glamora product landing and admin panel"
 };
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-ui"
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-display"
+});
 
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
+      <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

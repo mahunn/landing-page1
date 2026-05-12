@@ -9,13 +9,13 @@ export function LoginForm() {
   const [state, action, pending] = useActionState(loginAction, initialState);
 
   return (
-    <form action={action} className="space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <h1 className="text-xl font-semibold">Admin Login</h1>
-      <p className="text-sm text-slate-600">Sign in with your admin ID and password.</p>
+    <form action={action} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <h1 className="text-xl font-semibold">অ্যাডমিন লগইন</h1>
+      <p className="text-sm text-slate-600">আপনার অ্যাডমিন আইডি ও পাসওয়ার্ড দিয়ে লগইন করুন।</p>
 
       <div className="space-y-2">
         <label htmlFor="adminId" className="block text-sm font-medium text-slate-700">
-          Admin ID
+          অ্যাডমিন আইডি
         </label>
         <input
           id="adminId"
@@ -27,7 +27,7 @@ export function LoginForm() {
 
       <div className="space-y-2">
         <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-          Password
+          পাসওয়ার্ড
         </label>
         <input
           id="password"
@@ -40,12 +40,8 @@ export function LoginForm() {
 
       {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-lg bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-      >
-        {pending ? "Signing in..." : "Sign in"}
+      <button type="submit" disabled={pending} className="w-full rounded-lg bg-pink-600 px-4 py-2 font-medium text-white hover:bg-pink-500 disabled:opacity-60">
+        {pending ? "প্রবেশ করা হচ্ছে..." : "লগইন করুন"}
       </button>
     </form>
   );

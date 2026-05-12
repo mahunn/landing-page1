@@ -7,6 +7,18 @@ export type ProductVariant = {
   images: string[];
 };
 
+export type ProductFaq = {
+  question: string;
+  answer: string;
+};
+
+export type ProductReview = {
+  author: string;
+  location: string;
+  rating: number;
+  text: string;
+};
+
 export type ProductData = {
   title: string;
   description: string;
@@ -16,6 +28,8 @@ export type ProductData = {
   whatsappNumber: string;
   callNumber: string;
   variants: ProductVariant[];
+  faqs: ProductFaq[];
+  reviews: ProductReview[];
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -27,8 +41,8 @@ const defaultData: ProductData = {
   basePrice: 1750,
   discountType: "flat",
   discountValue: 80,
-  whatsappNumber: "8801700000000",
-  callNumber: "8801700000000",
+  whatsappNumber: "8801792110636",
+  callNumber: "8801792110636",
   variants: [
     {
       colorName: "Navy Blue",
@@ -44,8 +58,58 @@ const defaultData: ProductData = {
         "https://images.unsplash.com/photo-1495385794356-15371f348c31?q=80&w=1200&auto=format&fit=crop"
       ]
     }
+  ],
+  faqs: [
+    {
+      question: "ডেলিভারি কত দিনে হবে?",
+      answer: "ঢাকার ভেতরে ১-২ দিন, ঢাকার বাইরে ২-৪ কার্যদিবস।"
+    },
+    {
+      question: "পেমেন্ট কিভাবে করব?",
+      answer: "ক্যাশ অন ডেলিভারি এবং বিকাশ/নগদ উভয় অপশন আছে।"
+    }
+  ],
+  reviews: [
+    {
+      author: "রিমি",
+      location: "ঢাকা",
+      rating: 5,
+      text: "কাপড়ের কোয়ালিটি খুব ভালো, ছবির মতোই পেয়েছি।"
+    },
+    {
+      author: "মৌ",
+      location: "সিলেট",
+      rating: 5,
+      text: "ফিটিং ও রঙ দারুণ। ডেলিভারি সময়মতো হয়েছে।"
+    },
+    {
+      author: "তৃষা",
+      location: "চট্টগ্রাম",
+      rating: 4,
+      text: "প্যাকেজিং সুন্দর ছিল, সার্ভিসও ভালো।"
+    }
   ]
 };
+
+function coerceDiscountTypeFromJson(v: unknown): ProductData["discountType"] {
+  if (v === "flat" || v === "percent" || v === "none") return v;
+  return "none";
+}
+
+function normalizeProductData(data: Partial<ProductData>): ProductData {
+  return {
+    title: data.title ?? defaultData.title,
+    description: data.description ?? defaultData.description,
+    basePrice: Number(data.basePrice ?? defaultData.basePrice),
+    discountType: coerceDiscountTypeFromJson(data.discountType),
+    discountValue: Number(data.discountValue ?? defaultData.discountValue),
+    whatsappNumber: data.whatsappNumber ?? defaultData.whatsappNumber,
+    callNumber: data.callNumber ?? defaultData.callNumber,
+    variants: Array.isArray(data.variants) ? data.variants : defaultData.variants,
+    faqs: Array.isArray(data.faqs) ? data.faqs : defaultData.faqs,
+    reviews: Array.isArray(data.reviews) ? data.reviews : defaultData.reviews
+  };
+}
 
 export function calculateFinalPrice(data: ProductData): number {
   if (data.discountType === "flat") return Math.max(0, data.basePrice - data.discountValue);
@@ -67,7 +131,7 @@ export async function readProductData(): Promise<ProductData> {
   await ensureDataFile();
   const content = await fs.readFile(DATA_FILE, "utf-8");
   try {
-    return JSON.parse(content) as ProductData;
+    return normalizeProductData(JSON.parse(content) as Partial<ProductData>);
   } catch {
     await fs.writeFile(DATA_FILE, JSON.stringify(defaultData, null, 2), "utf-8");
     return defaultData;

@@ -3,7 +3,21 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { readOrders, writeOrders } from "@/lib/order-store";
 import { readProductData, writeProductData } from "@/lib/product-store";
+
+function revalidateAdminPaths(orderId?: string) {
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/product");
+  revalidatePath("/admin/cms");
+  if (orderId) {
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath(`/admin/orders/${orderId}/invoice`);
+  }
+}
 
 function parseLines(input: string): string[] {
   return input
@@ -12,33 +26,51 @@ function parseLines(input: string): string[] {
     .filter(Boolean);
 }
 
+function withNotice(url: string, notice: string, tone: "ok" | "error" = "ok"): string {
+  const [base, query] = url.split("?");
+  const params = new URLSearchParams(query ?? "");
+  params.set("notice", notice);
+  params.set("tone", tone);
+  return `${base}?${params.toString()}`;
+}
+
+function parseDiscountType(raw: FormDataEntryValue | null): "none" | "flat" | "percent" {
+  const s = String(raw ?? "none").trim();
+  if (s === "flat" || s === "percent" || s === "none") return s;
+  return "none";
+}
+
 export async function updateProductBasics(formData: FormData) {
   const data = await readProductData();
-  data.title = String(formData.get("title") ?? "").trim();
-  data.description = String(formData.get("description") ?? "").trim();
-  data.basePrice = Number(formData.get("basePrice") ?? 0);
-  data.discountType = String(formData.get("discountType") ?? "none") as "none" | "flat" | "percent";
-  data.discountValue = Number(formData.get("discountValue") ?? 0);
-  data.whatsappNumber = String(formData.get("whatsappNumber") ?? "").trim();
-  data.callNumber = String(formData.get("callNumber") ?? "").trim();
+  data.title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  data.description = String(formData.get("description") ?? "").trim().slice(0, 1000);
+  data.basePrice = Math.max(0, Number(formData.get("basePrice") ?? 0));
+  data.discountType = parseDiscountType(formData.get("discountType"));
+  data.discountValue = Math.max(0, Number(formData.get("discountValue") ?? 0));
+  if (data.discountType === "percent") {
+    data.discountValue = Math.min(data.discountValue, 100);
+  }
+  data.whatsappNumber = String(formData.get("whatsappNumber") ?? "").replace(/\D/g, "").slice(0, 20);
+  data.callNumber = String(formData.get("callNumber") ?? "").replace(/\D/g, "").slice(0, 20);
 
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
 }
 
 export async function updateVariantData(formData: FormData) {
   const data = await readProductData();
   const variantIndex = Number(formData.get("variantIndex") ?? 0);
-  const colorName = String(formData.get("colorName") ?? "").trim();
+  const colorName = String(formData.get("colorName") ?? "").trim().slice(0, 50);
   const sizes = parseLines(String(formData.get("sizes") ?? ""));
-  const images = parseLines(String(formData.get("images") ?? ""));
 
   if (!data.variants[variantIndex]) return;
-  data.variants[variantIndex] = { colorName, sizes, images };
+  data.variants[variantIndex] = {
+    ...data.variants[variantIndex],
+    colorName,
+    sizes
+  };
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
 }
 
 export async function addVariant() {
@@ -49,8 +81,7 @@ export async function addVariant() {
     images: []
   });
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
 }
 
 export async function removeVariant(formData: FormData) {
@@ -61,8 +92,42 @@ export async function removeVariant(formData: FormData) {
 
   data.variants.splice(variantIndex, 1);
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
+}
+
+export async function addFaq() {
+  const data = await readProductData();
+  data.faqs.push({
+    question: `নতুন প্রশ্ন ${data.faqs.length + 1}`,
+    answer: "এখানে উত্তর লিখুন।"
+  });
+  await writeProductData(data);
+  revalidateAdminPaths();
+  redirect(withNotice("/admin/cms", "নতুন FAQ যোগ হয়েছে"));
+}
+
+export async function updateFaq(formData: FormData) {
+  const data = await readProductData();
+  const faqIndex = Number(formData.get("faqIndex") ?? -1);
+  if (faqIndex < 0 || faqIndex >= data.faqs.length) return;
+
+  data.faqs[faqIndex] = {
+    question: String(formData.get("question") ?? "").trim().slice(0, 200),
+    answer: String(formData.get("answer") ?? "").trim().slice(0, 1500)
+  };
+  await writeProductData(data);
+  revalidateAdminPaths();
+  redirect(withNotice("/admin/cms", "FAQ আপডেট হয়েছে"));
+}
+
+export async function removeFaq(formData: FormData) {
+  const data = await readProductData();
+  const faqIndex = Number(formData.get("faqIndex") ?? -1);
+  if (faqIndex < 0 || faqIndex >= data.faqs.length) return;
+  data.faqs.splice(faqIndex, 1);
+  await writeProductData(data);
+  revalidateAdminPaths();
+  redirect(withNotice("/admin/cms", "FAQ মুছে ফেলা হয়েছে"));
 }
 
 function safeFileName(name: string): string {
@@ -86,8 +151,7 @@ export async function uploadVariantImage(formData: FormData) {
 
   data.variants[variantIndex].images.push(`/uploads/${fileName}`);
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
 }
 
 export async function removeVariantImage(formData: FormData) {
@@ -109,8 +173,7 @@ export async function removeVariantImage(formData: FormData) {
   }
 
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
 }
 
 export async function moveVariantImage(formData: FormData) {
@@ -132,6 +195,57 @@ export async function moveVariantImage(formData: FormData) {
   images[imageIndex] = temp;
 
   await writeProductData(data);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  revalidateAdminPaths();
+}
+
+export async function updateOrderStatus(formData: FormData) {
+  const orderId = String(formData.get("orderId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
+  const allowed = new Set(["pending", "confirmed", "shipped", "delivered", "canceled"]);
+  if (!orderId || !allowed.has(status)) return;
+
+  const orders = await readOrders();
+  const order = orders.find((item) => item.id === orderId);
+  if (!order) return;
+  order.status = status as "pending" | "confirmed" | "shipped" | "delivered" | "canceled";
+
+  await writeOrders(orders);
+  revalidateAdminPaths(orderId);
+  if (returnTo.startsWith("/admin")) {
+    redirect(withNotice(returnTo, "স্ট্যাটাস আপডেট হয়েছে"));
+  }
+}
+
+export async function updateOrderNote(formData: FormData) {
+  const orderId = String(formData.get("orderId") ?? "");
+  const note = String(formData.get("note") ?? "").trim().slice(0, 1000);
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
+  if (!orderId) return;
+
+  const orders = await readOrders();
+  const order = orders.find((item) => item.id === orderId);
+  if (!order) return;
+  order.note = note;
+  await writeOrders(orders);
+  revalidateAdminPaths(orderId);
+  if (returnTo.startsWith("/admin")) {
+    redirect(withNotice(returnTo, "নোট সেভ হয়েছে"));
+  }
+}
+
+export async function deleteOrder(formData: FormData) {
+  const orderId = String(formData.get("orderId") ?? "");
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
+  if (!orderId) return;
+
+  const orders = await readOrders();
+  const nextOrders = orders.filter((item) => item.id !== orderId);
+  if (nextOrders.length === orders.length) return;
+
+  await writeOrders(nextOrders);
+  revalidateAdminPaths(orderId);
+  if (returnTo.startsWith("/admin")) {
+    redirect(withNotice(returnTo, "অর্ডার ডিলিট হয়েছে"));
+  }
 }

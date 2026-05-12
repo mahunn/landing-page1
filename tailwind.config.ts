@@ -6,9 +6,14 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#eef2ff",
-          600: "#4f46e5",
-          700: "#4338ca"
+          50: "#FCE7F3",
+          500: "#E91E63",
+          600: "#D81B60",
+          700: "#BE185D"
+        },
+        success: {
+          500: "#22C55E",
+          600: "#16A34A"
         }
       }
     }
