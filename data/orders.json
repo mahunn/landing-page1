@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "customerName": "samin",
+    "customerPhone": "01828340666",
+    "customerAddress": "rt3 t35et rtertt",
+    "productTitle": "Premium Gown One Piece",
+    "selectedColor": "Navy Blue",
+    "selectedSize": "M",
+    "quantity": 1,
+    "unitPrice": 900,
+    "totalPrice": 900,
+    "note": "ডেলিভারি: ঢাকা সিটির বাইরে (১৫০ টাকা)",
+    "id": "#00001",
+    "status": "pending",
+    "createdAt": "2026-05-12T18:44:18.964Z"
+  }
+]

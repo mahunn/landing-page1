@@ -8,8 +8,14 @@ export function useBlobJsonPersistence(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
 }
 
+/** `private` if your Blob store only allows private objects; default `public` for server-only JSON. */
+function blobJsonAccess(): "public" | "private" {
+  return process.env.BLOB_JSON_ACCESS === "private" ? "private" : "public";
+}
+
 export async function readTextBlob(pathname: string): Promise<string | null> {
-  const result = await get(pathname, { access: "public" });
+  const access = blobJsonAccess();
+  const result = await get(pathname, { access });
   if (!result || result.statusCode === 304) return null;
   if (!result.stream) return null;
   return await new Response(result.stream).text();
@@ -17,7 +23,7 @@ export async function readTextBlob(pathname: string): Promise<string | null> {
 
 export async function writeTextBlob(pathname: string, body: string): Promise<void> {
   await put(pathname, body, {
-    access: "public",
+    access: blobJsonAccess(),
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json; charset=utf-8"
