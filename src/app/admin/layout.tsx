@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { AdminToast } from "@/components/admin/admin-toast";
 import { AdminNav } from "@/components/admin/admin-nav";
 
@@ -27,7 +28,9 @@ export default async function AdminLayout({
         </div>
       </header>
       <main className="container-page py-4 md:py-6">{children}</main>
-      <AdminToast />
+      <Suspense fallback={null}>
+        <AdminToast />
+      </Suspense>
     </div>
   );
 }
