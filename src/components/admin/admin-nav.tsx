@@ -7,7 +7,8 @@ const navItems = [
   { href: "/admin", label: "ড্যাশবোর্ড" },
   { href: "/admin/product", label: "পণ্য সেটিংস" },
   { href: "/admin/orders", label: "অর্ডার তালিকা" },
-  { href: "/admin/cms", label: "CMS/FAQ" }
+  { href: "/admin/cms", label: "CMS/FAQ" },
+  { href: "/admin/ads", label: "বিজ্ঞাপন" }
 ];
 
 export function AdminNav() {

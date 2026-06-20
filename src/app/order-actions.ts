@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import { createOrder } from "@/lib/order-store";
 import { calculateFinalPrice, readProductData } from "@/lib/product-store";
+import { sendCapiPurchase } from "@/lib/meta-capi";
 
 const orderSchema = z.object({
   customerName: z.string().min(2),
@@ -16,10 +18,22 @@ const orderSchema = z.object({
   note: z.string().optional()
 });
 
+export interface PlaceOrderResult {
+  error?: string;
+  success?: string;
+  purchaseDetails?: {
+    eventId: string;
+    value: number;
+    currency: string;
+    contentName: string;
+    numItems: number;
+  };
+}
+
 export async function placeOrderAction(
-  _prev: { error?: string; success?: string } | undefined,
+  _prev: PlaceOrderResult | undefined,
   formData: FormData
-): Promise<{ error?: string; success?: string }> {
+): Promise<PlaceOrderResult> {
   const parsed = orderSchema.safeParse({
     customerName: formData.get("customerName"),
     customerPhone: formData.get("customerPhone"),
@@ -59,9 +73,29 @@ export async function placeOrderAction(
       note: noteParts.join("\n")
     });
 
+    // Fire Meta Conversions API Purchase event (non-blocking)
+    const capiEventId = randomUUID();
+    void sendCapiPurchase({
+      eventId: capiEventId,
+      value: totalPrice,
+      currency: "BDT",
+      phone: parsed.data.customerPhone,
+      contentName: product.title,
+      numItems: parsed.data.quantity
+    });
+
     revalidatePath("/");
     revalidatePath("/admin");
-    return { success: `Order placed successfully: ${order.id}` };
+    return {
+      success: `Order placed successfully: ${order.id}`,
+      purchaseDetails: {
+        eventId: capiEventId,
+        value: totalPrice,
+        currency: "BDT",
+        contentName: product.title,
+        numItems: parsed.data.quantity
+      }
+    };
   } catch (err) {
     console.error("[placeOrderAction]", err);
     const raw = err instanceof Error ? err.message : "";

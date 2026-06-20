@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useState } from "react";
 import { placeOrderAction } from "@/app/order-actions";
 import { formatBdLocalDisplay, toBdInternationalDigits } from "@/lib/phone-bd";
 import type { ProductData } from "@/lib/product-store";
+import { trackPurchase } from "@/components/meta-pixel";
 
 function toMoney(amount: number): string {
   return `৳${Math.round(amount)}`;
@@ -83,6 +84,18 @@ export function ProductShowcase({ product }: { product: ProductData }) {
   )}`;
   const callLink = `tel:+${contactDigits}`;
   const [orderState, orderAction, orderPending] = useActionState(placeOrderAction, {});
+
+  useEffect(() => {
+    if (orderState.success && orderState.purchaseDetails) {
+      trackPurchase({
+        eventId: orderState.purchaseDetails.eventId,
+        value: orderState.purchaseDetails.value,
+        currency: orderState.purchaseDetails.currency,
+        contentName: orderState.purchaseDetails.contentName,
+        numItems: orderState.purchaseDetails.numItems
+      });
+    }
+  }, [orderState]);
 
   const featureLines = useMemo(() => {
     return product.description

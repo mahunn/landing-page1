@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import { Suspense } from "react";
+import { MetaPixel } from "@/components/meta-pixel";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,6 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+        {/* Facebook Pixel — loads after interactive, tracks every route change */}
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
         {children}
       </body>
     </html>
