@@ -53,19 +53,16 @@ export interface CapiPurchaseData {
  */
 export async function sendCapiPurchase(data: CapiPurchaseData): Promise<void> {
   const token = process.env.META_ACCESS_TOKEN;
-  const rawAccountId = process.env.META_AD_ACCOUNT_ID ?? "";
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
-  if (!token || !rawAccountId) {
-    console.warn("[meta-capi] META_ACCESS_TOKEN or META_AD_ACCOUNT_ID not set — skipping CAPI.");
+  if (!token) {
+    console.warn("[meta-capi] META_ACCESS_TOKEN not set — skipping CAPI.");
     return;
   }
 
-  // Ad Account ID must be prefixed with "act_"
-  const accountId = rawAccountId.startsWith("act_") ? rawAccountId : `act_${rawAccountId}`;
-  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-
   if (!pixelId) {
-    console.warn("[meta-capi] NEXT_PUBLIC_META_PIXEL_ID not set — CAPI event may not match Pixel.");
+    console.warn("[meta-capi] NEXT_PUBLIC_META_PIXEL_ID not set — skipping CAPI.");
+    return;
   }
 
   const userData: Record<string, string> = {};

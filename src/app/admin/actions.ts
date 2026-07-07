@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { readOrders, writeOrders } from "@/lib/order-store";
 import { readProductData, writeProductData } from "@/lib/product-store";
+import { put, del } from "@vercel/blob";
+import { useBlobJsonPersistence } from "@/lib/vercel-blob-json";
 
 function revalidateAdminPaths(orderId?: string) {
   revalidatePath("/");
@@ -56,6 +58,7 @@ export async function updateProductBasics(formData: FormData) {
 
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "পণ্য তথ্য সেভ হয়েছে"));
 }
 
 export async function updateVariantData(formData: FormData) {
@@ -72,6 +75,7 @@ export async function updateVariantData(formData: FormData) {
   };
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "ভ্যারিয়েন্ট সেভ হয়েছে"));
 }
 
 export async function addVariant() {
@@ -83,6 +87,7 @@ export async function addVariant() {
   });
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "নতুন কালার যোগ হয়েছে"));
 }
 
 export async function removeVariant(formData: FormData) {
@@ -94,6 +99,7 @@ export async function removeVariant(formData: FormData) {
   data.variants.splice(variantIndex, 1);
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "ভ্যারিয়েন্ট মুছে ফেলা হয়েছে"));
 }
 
 export async function addFaq() {
@@ -142,17 +148,40 @@ export async function uploadVariantImage(formData: FormData) {
   if (variantIndex < 0 || variantIndex >= data.variants.length) return;
   if (!(file instanceof File) || file.size === 0) return;
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadDir, { recursive: true });
+  if (useBlobJsonPersistence()) {
+    try {
+      const blob = await put(`glamora/uploads/${Date.now()}-${safeFileName(file.name)}`, file, {
+        access: "public",
+        addRandomSuffix: false
+      });
+      data.variants[variantIndex].images.push(blob.url);
+    } catch (err: any) {
+      if (err?.message?.includes("private store")) {
+        console.warn("[uploadVariantImage] Public access failed on private store, retrying with private access.");
+        const blob = await put(`glamora/uploads/${Date.now()}-${safeFileName(file.name)}`, file, {
+          access: "private",
+          addRandomSuffix: false
+        });
+        data.variants[variantIndex].images.push(blob.url);
+      } else {
+        throw err;
+      }
+    }
+  } else {
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadDir, { recursive: true });
 
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const fileName = `${Date.now()}-${safeFileName(file.name)}`;
-  const fullPath = path.join(uploadDir, fileName);
-  await fs.writeFile(fullPath, bytes);
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const fileName = `${Date.now()}-${safeFileName(file.name)}`;
+    const fullPath = path.join(uploadDir, fileName);
+    await fs.writeFile(fullPath, bytes);
 
-  data.variants[variantIndex].images.push(`/uploads/${fileName}`);
+    data.variants[variantIndex].images.push(`/uploads/${fileName}`);
+  }
+
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "ছবি আপলোড সফল হয়েছে"));
 }
 
 export async function removeVariantImage(formData: FormData) {
@@ -171,10 +200,17 @@ export async function removeVariantImage(formData: FormData) {
     } catch {
       // File may already be removed; ignore and continue.
     }
+  } else if (removed && useBlobJsonPersistence()) {
+    try {
+      await del(removed);
+    } catch {
+      // File may already be removed or invalid; ignore and continue.
+    }
   }
 
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "ছবি মুছে ফেলা হয়েছে"));
 }
 
 export async function moveVariantImage(formData: FormData) {
@@ -197,6 +233,7 @@ export async function moveVariantImage(formData: FormData) {
 
   await writeProductData(data);
   revalidateAdminPaths();
+  redirect(withNotice("/admin/product", "ছবির ক্রম পরিবর্তন হয়েছে"));
 }
 
 export async function updateOrderStatus(formData: FormData) {

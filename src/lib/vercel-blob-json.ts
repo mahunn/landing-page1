@@ -14,18 +14,38 @@ function blobJsonAccess(): "public" | "private" {
 }
 
 export async function readTextBlob(pathname: string): Promise<string | null> {
-  const access = blobJsonAccess();
-  const result = await get(pathname, { access });
-  if (!result || result.statusCode === 304) return null;
-  if (!result.stream) return null;
-  return await new Response(result.stream).text();
+  try {
+    const access = blobJsonAccess();
+    const result = await get(pathname, { access });
+    if (!result || result.statusCode === 304) return null;
+    if (!result.stream) return null;
+    return await new Response(result.stream).text();
+  } catch (err) {
+    console.warn(`[vercel-blob-json] Failed to read text blob "${pathname}":`, err);
+    return null;
+  }
 }
 
 export async function writeTextBlob(pathname: string, body: string): Promise<void> {
-  await put(pathname, body, {
-    access: blobJsonAccess(),
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: "application/json; charset=utf-8"
-  });
+  const access = blobJsonAccess();
+  try {
+    await put(pathname, body, {
+      access,
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: "application/json; charset=utf-8"
+    });
+  } catch (err: any) {
+    if (access === "public" && err?.message?.includes("private store")) {
+      console.warn(`[vercel-blob-json] Public access failed on private store, retrying with private access for "${pathname}".`);
+      await put(pathname, body, {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: "application/json; charset=utf-8"
+      });
+      return;
+    }
+    throw err;
+  }
 }

@@ -90,8 +90,9 @@ function PixelPageViewTracker() {
   return null;
 }
 
-export function MetaPixel() {
-  if (!PIXEL_ID) return null;
+export function MetaPixel({ pixelId }: { pixelId?: string }) {
+  const activePixelId = pixelId || PIXEL_ID;
+  if (!activePixelId) return null;
 
   return (
     <>
@@ -113,7 +114,7 @@ export function MetaPixel() {
               s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)
             }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${PIXEL_ID}');
+            fbq('init', '${activePixelId}');
             fbq('track', 'PageView');
           `
         }}
@@ -125,7 +126,7 @@ export function MetaPixel() {
           height="1"
           width="1"
           style={{ display: "none" }}
-          src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
+          src={`https://www.facebook.com/tr?id=${activePixelId}&ev=PageView&noscript=1`}
           alt=""
         />
       </noscript>
