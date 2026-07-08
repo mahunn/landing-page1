@@ -5,6 +5,7 @@ import { placeOrderAction } from "@/app/order-actions";
 import { formatBdLocalDisplay, toBdInternationalDigits } from "@/lib/phone-bd";
 import type { ProductData } from "@/lib/product-store";
 import { trackPurchase } from "@/components/meta-pixel";
+import { getDisplayImageUrl } from "@/lib/image-helper";
 
 function toMoney(amount: number): string {
   return `৳${Math.round(amount)}`;
@@ -159,7 +160,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 {activeImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={activeImage}
+                    src={getDisplayImageUrl(activeImage)}
                     alt={product.title}
                     className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.02]"
                   />
@@ -211,7 +212,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                         }`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img} alt="" className="h-full w-full object-cover" />
+                        <img src={getDisplayImageUrl(img)} alt="" className="h-full w-full object-cover" />
                       </button>
                     ))}
                   </div>
@@ -356,7 +357,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                         {previewImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={previewImage} alt="" className="h-full w-full object-cover" />
+                          <img src={getDisplayImageUrl(previewImage)} alt="" className="h-full w-full object-cover" />
                         ) : null}
                       </div>
                     </button>

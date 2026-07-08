@@ -68,11 +68,43 @@ export async function updateVariantData(formData: FormData) {
   const sizes = parseLines(String(formData.get("sizes") ?? ""));
 
   if (!data.variants[variantIndex]) return;
-  data.variants[variantIndex] = {
-    ...data.variants[variantIndex],
-    colorName,
-    sizes
-  };
+  data.variants[variantIndex].colorName = colorName;
+  data.variants[variantIndex].sizes = sizes;
+
+  const file = formData.get("imageFile");
+  if (file && file instanceof File && file.size > 0) {
+    if (useBlobJsonPersistence()) {
+      try {
+        const blob = await put(`glamora/uploads/${Date.now()}-${safeFileName(file.name)}`, file, {
+          access: "public",
+          addRandomSuffix: false
+        });
+        data.variants[variantIndex].images.push(blob.url);
+      } catch (err: any) {
+        if (err?.message?.includes("private store")) {
+          console.warn("[updateVariantData] Public access failed on private store, retrying with private access.");
+          const blob = await put(`glamora/uploads/${Date.now()}-${safeFileName(file.name)}`, file, {
+            access: "private",
+            addRandomSuffix: false
+          });
+          data.variants[variantIndex].images.push(blob.url);
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadDir, { recursive: true });
+
+      const bytes = Buffer.from(await file.arrayBuffer());
+      const fileName = `${Date.now()}-${safeFileName(file.name)}`;
+      const fullPath = path.join(uploadDir, fileName);
+      await fs.writeFile(fullPath, bytes);
+
+      data.variants[variantIndex].images.push(`/uploads/${fileName}`);
+    }
+  }
+
   await writeProductData(data);
   revalidateAdminPaths();
   redirect(withNotice("/admin/product", "ভ্যারিয়েন্ট সেভ হয়েছে"));
