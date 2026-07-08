@@ -27,7 +27,10 @@ export default function RootLayout({
       <body className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
         {/* Facebook Pixel — loads after interactive, tracks every route change */}
         <Suspense fallback={null}>
-          <MetaPixel pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+          <MetaPixel
+            pixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID}
+            testEventCode={process.env.META_TEST_EVENT_CODE}
+          />
         </Suspense>
         {children}
       </body>
