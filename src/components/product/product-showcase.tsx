@@ -6,6 +6,7 @@ import { formatBdLocalDisplay, toBdInternationalDigits } from "@/lib/phone-bd";
 import type { ProductData } from "@/lib/product-store";
 import { trackPurchase } from "@/components/meta-pixel";
 import { getDisplayImageUrl } from "@/lib/image-helper";
+import type { OrderItem } from "@/lib/order-store";
 
 function toMoney(amount: number): string {
   return `৳${Math.round(amount)}`;
@@ -55,13 +56,20 @@ export function ProductShowcase({ product }: { product: ProductData }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(0);
 
+  // Multiple items ordering states
+  const [items, setItems] = useState<OrderItem[]>([]);
+  const [activeQuantity, setActiveQuantity] = useState(1);
+  const [addNotice, setAddNotice] = useState<string | null>(null);
+
   const currentVariant = product.variants[variantIndex];
   const images = currentVariant?.images ?? [];
   const activeImage = images[imageIndex] ?? "";
 
+  // Reset active quantity and size when color changes
   useEffect(() => {
     setSize(currentVariant?.sizes[0] ?? "");
     setImageIndex(0);
+    setActiveQuantity(1);
   }, [variantIndex, currentVariant?.sizes]);
 
   const discountedPrice = useMemo(() => finalPrice(product), [product]);
@@ -80,11 +88,67 @@ export function ProductShowcase({ product }: { product: ProductData }) {
         ? `-${toBanglaDigits(percentOff)}% ছাড়`
         : "";
 
-  const whatsappLink = `https://wa.me/${contactDigits}?text=${encodeURIComponent(
-    `অর্ডার করতে চাই: ${product.title} — ${currentVariant?.colorName ?? ""}, সাইজ ${size}`
-  )}`;
+  const currentSelection = useMemo(() => ({
+    color: currentVariant?.colorName || "",
+    size: size,
+    quantity: activeQuantity
+  }), [currentVariant?.colorName, size, activeQuantity]);
+
+  const displayItems = useMemo(() => {
+    return items.length > 0 ? items : [currentSelection];
+  }, [items, currentSelection]);
+
+  const totalQuantity = useMemo(() => {
+    return displayItems.reduce((sum, item) => sum + item.quantity, 0);
+  }, [displayItems]);
+
+  const totalPrice = useMemo(() => {
+    return discountedPrice * totalQuantity;
+  }, [discountedPrice, totalQuantity]);
+
+  const whatsappLink = useMemo(() => {
+    const itemSummaryText = displayItems
+      .map((item) => `${item.color} (${item.size}) - ${item.quantity}টি`)
+      .join(", ");
+    return `https://wa.me/${contactDigits}?text=${encodeURIComponent(
+      `অর্ডার করতে চাই: ${product.title} — [ ${itemSummaryText} ]`
+    )}`;
+  }, [contactDigits, product.title, displayItems]);
   const callLink = `tel:+${contactDigits}`;
   const [orderState, orderAction, orderPending] = useActionState(placeOrderAction, {});
+
+  const handleAddItem = () => {
+    if (!size) return;
+    const activeColor = currentVariant?.colorName || "";
+    setItems((prev) => {
+      const idx = prev.findIndex((item) => item.color === activeColor && item.size === size);
+      if (idx > -1) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], quantity: next[idx].quantity + activeQuantity };
+        return next;
+      }
+      return [...prev, { color: activeColor, size, quantity: activeQuantity }];
+    });
+    setAddNotice(`"${activeColor} (${size})" অর্ডারে যোগ করা হয়েছে!`);
+    setActiveQuantity(1);
+    setTimeout(() => setAddNotice(null), 3000);
+  };
+
+  const handleRemoveItem = (idx: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleUpdateItemQty = (idx: number, delta: number) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const nextQty = next[idx].quantity + delta;
+      if (nextQty <= 0) {
+        return prev.filter((_, i) => i !== idx);
+      }
+      next[idx] = { ...next[idx], quantity: nextQty };
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (orderState.success && orderState.purchaseDetails) {
@@ -380,6 +444,45 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   </button>
                 ))}
               </div>
+
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                <p className="text-sm font-semibold text-slate-800">পরিমাণ</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setActiveQuantity((q) => Math.max(1, q - 1))}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95"
+                    >
+                      -
+                    </button>
+                    <span className="w-12 text-center text-sm font-bold text-slate-800 tabular-nums">
+                      {activeQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveQuantity((q) => q + 1)}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95"
+                    >
+                      +
+                    </button>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    disabled={!size}
+                    className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-900/10 transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    ➕ আর একটি কালার/সাইজ যোগ করুন
+                  </button>
+                </div>
+                {addNotice ? (
+                  <p className="mt-3 text-center text-xs font-semibold text-teal-600 bg-teal-50 py-1.5 px-3 rounded-xl border border-teal-100 transition duration-300">
+                    ✓ {addNotice}
+                  </p>
+                ) : null}
+              </div>
             </div>
 
             {/* Order form */}
@@ -446,19 +549,12 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </div>
               </div>
 
-              <input type="hidden" name="color" value={currentVariant?.colorName ?? ""} />
-              <input type="hidden" name="size" value={size} />
+              <input type="hidden" name="items" value={JSON.stringify(items)} />
+              <input type="hidden" name="color" value={displayItems[0]?.color || ""} />
+              <input type="hidden" name="size" value={displayItems[0]?.size || ""} />
+              <input type="hidden" name="quantity" value={totalQuantity} />
+              
               <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">পরিমাণ</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    min={1}
-                    defaultValue={1}
-                    className="min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
-                  />
-                </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">নোট (ঐচ্ছিক)</label>
                   <input
@@ -469,20 +565,83 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </div>
               </div>
 
+              {/* Items List (only shown if they have explicitly added items) */}
+              {items.length > 0 ? (
+                <div className="rounded-2xl border border-violet-100 bg-violet-50/20 p-4">
+                  <p className="text-sm font-bold text-slate-800 mb-3">অর্ডারকৃত আইটেমসমূহ:</p>
+                  <div className="space-y-2">
+                    {items.map((item, idx) => (
+                      <div key={`${item.color}-${item.size}-${idx}`} className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900 truncate">{item.color}</p>
+                          <p className="text-xs text-slate-500">সাইজ: {item.size}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItemQty(idx, -1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold transition"
+                          >
+                            -
+                          </button>
+                          <span className="w-6 text-center text-sm font-semibold text-slate-800 tabular-nums">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItemQty(idx, 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold transition"
+                          >
+                            +
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(idx)}
+                            className="ml-2 rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 transition"
+                            aria-label="মুছে ফেলুন"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-bold text-slate-800">অর্ডার সামারি</p>
-                <ul className="mt-2 space-y-1 text-sm text-slate-600">
-                  <li>
-                    রঙ: <span className="font-medium text-slate-900">{currentVariant?.colorName}</span>
+                <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
+                  {items.length > 0 ? (
+                    items.map((item, idx) => (
+                      <li key={idx} className="flex justify-between border-b border-slate-200/50 pb-1.5 last:border-0 last:pb-0">
+                        <span>{item.color} ({item.size}) x{item.quantity}</span>
+                        <span className="font-semibold text-slate-900">{toMoney(discountedPrice * item.quantity)}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <>
+                      <li>
+                        রঙ: <span className="font-medium text-slate-900">{currentVariant?.colorName}</span>
+                      </li>
+                      <li>
+                        সাইজ: <span className="font-medium text-slate-900">{size || "—"}</span>
+                      </li>
+                      <li>
+                        ইউনিট মূল্য: <span className="font-medium text-slate-900">{toMoney(discountedPrice)}</span>
+                      </li>
+                    </>
+                  )}
+                  <li className="flex justify-between pt-2 font-bold text-slate-900 border-t border-slate-200">
+                    <span>মোট পরিমাণ:</span>
+                    <span>{toBanglaDigits(totalQuantity)} পিস</span>
                   </li>
-                  <li>
-                    সাইজ: <span className="font-medium text-slate-900">{size || "—"}</span>
-                  </li>
-                  <li>
-                    ইউনিট মূল্য: <span className="font-medium text-slate-900">{toMoney(discountedPrice)}</span>
+                  <li className="flex justify-between font-bold text-violet-700 text-base">
+                    <span>সর্বমোট মূল্য:</span>
+                    <span>{toMoney(totalPrice)}</span>
                   </li>
                 </ul>
-                {!size ? (
+                {!size && items.length === 0 ? (
                   <p className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
                     <span aria-hidden>⚠️</span>
                     অনুগ্রহ করে সাইজ সিলেক্ট করুন
@@ -495,7 +654,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
               <button
                 type="submit"
-                disabled={orderPending || !size}
+                disabled={orderPending || (!size && items.length === 0)}
                 className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-indigo-900/20 hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span aria-hidden>✓</span>

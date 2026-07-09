@@ -45,8 +45,14 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
           <div>
             <h2 className="text-sm font-semibold">অর্ডার তথ্য</h2>
             <p className="text-sm">স্ট্যাটাস: {order.status}</p>
-            <p className="text-sm">কালার: {order.selectedColor}</p>
-            <p className="text-sm">সাইজ: {order.selectedSize}</p>
+            {!order.items || order.items.length === 0 ? (
+              <>
+                <p className="text-sm">কালার: {order.selectedColor}</p>
+                <p className="text-sm">সাইজ: {order.selectedSize}</p>
+              </>
+            ) : (
+              <p className="text-sm">আইটেম সংখ্যা: {order.items.length}টি</p>
+            )}
           </div>
         </section>
 
@@ -56,18 +62,36 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
             <p className="text-right">পরিমাণ</p>
             <p className="text-right">মূল্য</p>
           </div>
-          <div className="grid grid-cols-4 py-3 text-sm">
-            <p className="col-span-2">{order.productTitle}</p>
-            <p className="text-right">{order.quantity}</p>
-            <p className="text-right">৳{Math.round(order.totalPrice)}</p>
-          </div>
+          {order.items && order.items.length > 0 ? (
+            order.items.map((item, idx) => (
+              <div key={idx} className="grid grid-cols-4 py-2.5 text-sm border-b border-slate-100 last:border-b-0">
+                <p className="col-span-2">
+                  {order.productTitle} - <span className="text-slate-500">{item.color} ({item.size})</span>
+                </p>
+                <p className="text-right">{item.quantity}</p>
+                <p className="text-right">৳{Math.round(order.unitPrice * item.quantity)}</p>
+              </div>
+            ))
+          ) : (
+            <div className="grid grid-cols-4 py-3 text-sm">
+              <p className="col-span-2">
+                {order.productTitle} - <span className="text-slate-500">{order.selectedColor} ({order.selectedSize})</span>
+              </p>
+              <p className="text-right">{order.quantity}</p>
+              <p className="text-right">৳{Math.round(order.totalPrice)}</p>
+            </div>
+          )}
           <div className="space-y-1 border-t border-slate-200 pt-3 text-sm">
             <div className="flex justify-between">
               <p>ইউনিট দাম</p>
               <p>৳{Math.round(order.unitPrice)}</p>
             </div>
+            <div className="flex justify-between font-semibold border-t border-slate-100 pt-1.5 mt-1.5">
+              <p>মোট পরিমাণ</p>
+              <p>{order.quantity} পিস</p>
+            </div>
             <div className="flex justify-between font-semibold">
-              <p>মোট</p>
+              <p>সর্বমোট মূল্য</p>
               <p>৳{Math.round(order.totalPrice)}</p>
             </div>
           </div>

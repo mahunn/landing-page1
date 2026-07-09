@@ -71,24 +71,47 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
 
       <article className="admin-card">
         <h3 className="font-semibold">পণ্যের তথ্য</h3>
-        <div className="mt-3 space-y-1 text-sm">
+        <div className="mt-3 space-y-3 text-sm">
           <p>
             <span className="text-slate-500">পণ্য:</span> {order.productTitle}
           </p>
-          <p>
-            <span className="text-slate-500">কালার:</span> {order.selectedColor}
-          </p>
-          <p>
-            <span className="text-slate-500">সাইজ:</span> {order.selectedSize}
-          </p>
-          <p>
-            <span className="text-slate-500">পরিমাণ:</span> {order.quantity}
-          </p>
+          {order.items && order.items.length > 0 ? (
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 space-y-2">
+              <p className="font-semibold text-xs text-slate-500 uppercase tracking-wider">অর্ডারকৃত আইটেমসমূহ:</p>
+              <ul className="divide-y divide-slate-100">
+                {order.items.map((item, idx) => (
+                  <li key={idx} className="py-1.5 flex justify-between items-center text-slate-700">
+                    <span>
+                      কালার: <span className="font-medium text-slate-900">{item.color}</span>, সাইজ: <span className="font-medium text-slate-900">{item.size}</span>
+                    </span>
+                    <span className="font-medium text-slate-900">
+                      x{item.quantity} (৳{Math.round(order.unitPrice * item.quantity)})
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <>
+              <p>
+                <span className="text-slate-500">কালার:</span> {order.selectedColor}
+              </p>
+              <p>
+                <span className="text-slate-500">সাইজ:</span> {order.selectedSize}
+              </p>
+              <p>
+                <span className="text-slate-500">পরিমাণ:</span> {order.quantity}
+              </p>
+            </>
+          )}
           <p>
             <span className="text-slate-500">ইউনিট দাম:</span> ৳{Math.round(order.unitPrice)}
           </p>
           <p className="font-semibold">
-            <span className="text-slate-500 font-normal">মোট:</span> ৳{Math.round(order.totalPrice)}
+            <span className="text-slate-500 font-normal">মোট পরিমাণ:</span> {order.quantity} পিস
+          </p>
+          <p className="font-semibold">
+            <span className="text-slate-500 font-normal">মোট দাম:</span> ৳{Math.round(order.totalPrice)}
           </p>
           {order.note ? (
             <p>

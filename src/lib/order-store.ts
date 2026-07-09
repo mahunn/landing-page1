@@ -9,6 +9,12 @@ import {
 
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "canceled";
 
+export type OrderItem = {
+  color: string;
+  size: string;
+  quantity: number;
+};
+
 export type OrderData = {
   id: string;
   customerName: string;
@@ -23,6 +29,7 @@ export type OrderData = {
   note: string;
   status: OrderStatus;
   createdAt: string;
+  items?: OrderItem[];
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");

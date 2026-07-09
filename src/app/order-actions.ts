@@ -11,11 +11,12 @@ const orderSchema = z.object({
   customerName: z.string().min(2),
   customerPhone: z.string().min(8),
   customerAddress: z.string().min(5),
-  color: z.string().min(1),
-  size: z.string().min(1),
-  quantity: z.coerce.number().int().min(1).max(20),
+  color: z.string().optional(),
+  size: z.string().optional(),
+  quantity: z.coerce.number().int().optional(),
   deliveryZone: z.enum(["inside", "outside"]).optional(),
-  note: z.string().optional()
+  note: z.string().optional(),
+  items: z.string().optional()
 });
 
 export interface PlaceOrderResult {
@@ -38,19 +39,45 @@ export async function placeOrderAction(
     customerName: formData.get("customerName"),
     customerPhone: formData.get("customerPhone"),
     customerAddress: formData.get("customerAddress"),
-    color: formData.get("color"),
-    size: formData.get("size"),
-    quantity: formData.get("quantity"),
+    color: formData.get("color") ?? undefined,
+    size: formData.get("size") ?? undefined,
+    quantity: formData.get("quantity") ?? undefined,
     deliveryZone: formData.get("deliveryZone") ?? undefined,
-    note: formData.get("note")
+    note: formData.get("note"),
+    items: formData.get("items") ?? undefined
   });
 
   if (!parsed.success) return { error: "Please fill all required order fields correctly." };
 
   try {
+    let itemsList: { color: string; size: string; quantity: number }[] = [];
+    if (parsed.data.items) {
+      try {
+        itemsList = JSON.parse(parsed.data.items);
+      } catch (e) {
+        console.error("Failed to parse order items JSON:", e);
+      }
+    }
+
+    if (itemsList.length === 0) {
+      const colorVal = parsed.data.color || "";
+      const sizeVal = parsed.data.size || "";
+      const qtyVal = Number(parsed.data.quantity || 1);
+      if (colorVal && sizeVal && qtyVal > 0) {
+        itemsList = [{ color: colorVal, size: sizeVal, quantity: qtyVal }];
+      } else {
+        return { error: "অনুগ্রহ করে রঙ ও সাইজ সিলেক্ট করুন।" };
+      }
+    }
+
+    const totalQuantity = itemsList.reduce((sum, item) => sum + item.quantity, 0);
+    if (totalQuantity <= 0) {
+      return { error: "অর্ডার করার জন্য অন্তত ১টি পণ্য থাকতে হবে।" };
+    }
+
     const product = await readProductData();
     const unitPrice = calculateFinalPrice(product);
-    const totalPrice = unitPrice * parsed.data.quantity;
+    const totalPrice = unitPrice * totalQuantity;
 
     const deliveryLine =
       parsed.data.deliveryZone === "inside"
@@ -60,17 +87,21 @@ export async function placeOrderAction(
           : "";
     const noteParts = [deliveryLine, parsed.data.note].filter((part) => part && String(part).trim().length > 0);
 
+    const selectedColor = itemsList.map(i => i.color).filter((v, idx, arr) => arr.indexOf(v) === idx).join(", ");
+    const selectedSize = itemsList.map(i => i.size).filter((v, idx, arr) => arr.indexOf(v) === idx).join(", ");
+
     const order = await createOrder({
       customerName: parsed.data.customerName,
       customerPhone: parsed.data.customerPhone,
       customerAddress: parsed.data.customerAddress,
       productTitle: product.title,
-      selectedColor: parsed.data.color,
-      selectedSize: parsed.data.size,
-      quantity: parsed.data.quantity,
+      selectedColor,
+      selectedSize,
+      quantity: totalQuantity,
       unitPrice,
       totalPrice,
-      note: noteParts.join("\n")
+      note: noteParts.join("\n"),
+      items: itemsList
     });
 
     // Fire Meta Conversions API Purchase event (non-blocking)
@@ -81,7 +112,7 @@ export async function placeOrderAction(
       currency: "BDT",
       phone: parsed.data.customerPhone,
       contentName: product.title,
-      numItems: parsed.data.quantity
+      numItems: totalQuantity
     });
 
     revalidatePath("/");
@@ -93,7 +124,7 @@ export async function placeOrderAction(
         value: totalPrice,
         currency: "BDT",
         contentName: product.title,
-        numItems: parsed.data.quantity
+        numItems: totalQuantity
       }
     };
   } catch (err) {

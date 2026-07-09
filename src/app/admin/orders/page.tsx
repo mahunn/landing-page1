@@ -39,10 +39,12 @@ export default async function AdminOrdersPage({ searchParams }: OrdersPageProps)
   const paginatedOrders = filteredOrders.slice((safePage - 1) * perPage, safePage * perPage);
   const incompleteOrders = orders.filter((o) => o.status === "pending" || o.status === "confirmed" || o.status === "shipped");
   const allIncompleteText = incompleteOrders
-    .map(
-      (o) =>
-        `${o.id} | ${o.customerName} | ${o.customerPhone} | ${o.customerAddress} | ${o.selectedColor}/${o.selectedSize} x${o.quantity} | ৳${Math.round(o.totalPrice)} | ${o.status}`
-    )
+    .map((o) => {
+      const itemDetails = o.items && o.items.length > 0
+        ? o.items.map((i) => `${i.color}/${i.size} x${i.quantity}`).join(", ")
+        : `${o.selectedColor}/${o.selectedSize} x${o.quantity}`;
+      return `${o.id} | ${o.customerName} | ${o.customerPhone} | ${o.customerAddress} | ${itemDetails} | ৳${Math.round(o.totalPrice)} | ${o.status}`;
+    })
     .join("\n");
   const stats = [
     { label: "মোট", value: orders.length },
@@ -103,79 +105,94 @@ export default async function AdminOrdersPage({ searchParams }: OrdersPageProps)
           {filteredOrders.length === 0 ? (
             <p className="text-sm text-slate-500">এখনও কোনো অর্ডার নেই।</p>
           ) : (
-            paginatedOrders.map((order) => (
-              <article key={order.id} className="relative rounded-3xl border border-slate-100 bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-slate-50/40">
-                <Link
-                  href={`/admin/orders/${encodeURIComponent(order.id)}`}
-                  aria-label={`${order.id} order details`}
-                  className="absolute inset-0 z-0 rounded-lg"
-                />
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="relative z-10 text-sm font-semibold">{order.id}</p>
-                  <p className="relative z-10 text-xs text-slate-500">{formatDateTimeDhaka(order.createdAt)}</p>
-                </div>
-                <div className="relative z-10 mt-1 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                  {order.status}
-                </div>
-                <p className="relative z-10 mt-1 text-sm">
-                  {order.customerName} ({order.customerPhone})
-                </p>
-                <p className="relative z-10 text-xs text-slate-600">
-                  {order.selectedColor} / {order.selectedSize} x{order.quantity} - ৳{Math.round(order.totalPrice)}
-                </p>
-                <p className="relative z-10 mt-1 text-xs text-slate-500">{order.customerAddress}</p>
-                <form action={updateOrderStatus} className="relative z-10 mt-2 flex items-center gap-2">
-                  <input type="hidden" name="orderId" value={order.id} />
-                  <input
-                    type="hidden"
-                    name="returnTo"
-                    value={`/admin/orders?q=${encodeURIComponent(params.q ?? "")}&status=${encodeURIComponent(statusFilter)}&page=${safePage}`}
+            paginatedOrders.map((order) => {
+              const singleItemText = order.items && order.items.length > 0
+                ? order.items.map((i) => `${i.color}/${i.size} x${i.quantity}`).join(", ")
+                : `${order.selectedColor}/${order.selectedSize} x${order.quantity}`;
+              return (
+                <article key={order.id} className="relative rounded-3xl border border-slate-100 bg-white p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-slate-50/40">
+                  <Link
+                    href={`/admin/orders/${encodeURIComponent(order.id)}`}
+                    aria-label={`${order.id} order details`}
+                    className="absolute inset-0 z-0 rounded-lg"
                   />
-                  <select
-                    name="status"
-                    defaultValue={order.status}
-                    className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 text-xs"
-                  >
-                    <option value="pending">pending</option>
-                    <option value="confirmed">confirmed</option>
-                    <option value="shipped">shipped</option>
-                    <option value="delivered">delivered</option>
-                    <option value="canceled">canceled</option>
-                  </select>
-                  <button className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">আপডেট</button>
-                </form>
-                <div className="relative z-10 mt-2 flex flex-wrap gap-2">
-                  <a
-                    href={`https://wa.me/${order.customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`আপনার অর্ডার ${order.id} নিয়ে যোগাযোগ করা হচ্ছে।`)}`}
-                    className="min-h-12 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    WhatsApp
-                  </a>
-                  <a
-                    href={`tel:${order.customerPhone}`}
-                    className="min-h-12 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    Call
-                  </a>
-                  <form action={deleteOrder}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="relative z-10 text-sm font-semibold">{order.id}</p>
+                    <p className="relative z-10 text-xs text-slate-500">{formatDateTimeDhaka(order.createdAt)}</p>
+                  </div>
+                  <div className="relative z-10 mt-1 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                    {order.status}
+                  </div>
+                  <p className="relative z-10 mt-1 text-sm">
+                    {order.customerName} ({order.customerPhone})
+                  </p>
+                  <p className="relative z-10 text-xs text-slate-600">
+                    {order.items && order.items.length > 0 ? (
+                      order.items.map((item, idx) => (
+                        <span key={idx}>
+                          {idx > 0 && ", "}
+                          {item.color} / {item.size} x{item.quantity}
+                        </span>
+                      ))
+                    ) : (
+                      <>{order.selectedColor} / {order.selectedSize} x{order.quantity}</>
+                    )}
+                    {" - "}৳{Math.round(order.totalPrice)}
+                  </p>
+                  <p className="relative z-10 mt-1 text-xs text-slate-500">{order.customerAddress}</p>
+                  <form action={updateOrderStatus} className="relative z-10 mt-2 flex items-center gap-2">
                     <input type="hidden" name="orderId" value={order.id} />
                     <input
                       type="hidden"
                       name="returnTo"
                       value={`/admin/orders?q=${encodeURIComponent(params.q ?? "")}&status=${encodeURIComponent(statusFilter)}&page=${safePage}`}
                     />
-                    <ConfirmSubmitButton
-                      label="ডিলিট"
-                      className="min-h-12 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"
-                      confirmText="এই অর্ডারটি স্থায়ীভাবে মুছে ফেলতে চান?"
-                    />
+                    <select
+                      name="status"
+                      defaultValue={order.status}
+                      className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 text-xs"
+                    >
+                      <option value="pending">pending</option>
+                      <option value="confirmed">confirmed</option>
+                      <option value="shipped">shipped</option>
+                      <option value="delivered">delivered</option>
+                      <option value="canceled">canceled</option>
+                    </select>
+                    <button className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white">আপডেট</button>
                   </form>
-                  <OrderCopyButtons
-                    singleText={`${order.id} | ${order.customerName} | ${order.customerPhone} | ${order.customerAddress} | ${order.selectedColor}/${order.selectedSize} x${order.quantity} | ৳${Math.round(order.totalPrice)} | ${order.status}`}
-                  />
-                </div>
-              </article>
-            ))
+                  <div className="relative z-10 mt-2 flex flex-wrap gap-2">
+                    <a
+                      href={`https://wa.me/${order.customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`আপনার অর্ডার ${order.id} নিয়ে যোগাযোগ করা হচ্ছে।`)}`}
+                      className="min-h-12 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      WhatsApp
+                    </a>
+                    <a
+                      href={`tel:${order.customerPhone}`}
+                      className="min-h-12 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Call
+                    </a>
+                    <form action={deleteOrder}>
+                      <input type="hidden" name="orderId" value={order.id} />
+                      <input
+                        type="hidden"
+                        name="returnTo"
+                        value={`/admin/orders?q=${encodeURIComponent(params.q ?? "")}&status=${encodeURIComponent(statusFilter)}&page=${safePage}`}
+                      />
+                      <ConfirmSubmitButton
+                        label="ডিলিট"
+                        className="min-h-12 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800"
+                        confirmText="এই অর্ডারটি স্থায়ীভাবে মুছে ফেলতে চান?"
+                      />
+                    </form>
+                    <OrderCopyButtons
+                      singleText={`${order.id} | ${order.customerName} | ${order.customerPhone} | ${order.customerAddress} | ${singleItemText} | ৳${Math.round(order.totalPrice)} | ${order.status}`}
+                    />
+                  </div>
+                </article>
+              );
+            })
           )}
         </div>
         {totalPages > 1 ? (
