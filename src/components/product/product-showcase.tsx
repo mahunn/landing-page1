@@ -263,22 +263,30 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 ) : null}
               </div>
 
-              {images.length > 0 ? (
+              {product.variants.length > 0 ? (
                 <div className="relative mt-3">
                   <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5">
-                    {images.map((img, idx) => (
-                      <button
-                        key={`${img}-${idx}`}
-                        type="button"
-                        onClick={() => setImageIndex(idx)}
-                        className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                          idx === imageIndex ? "border-violet-500 shadow-md ring-2 ring-violet-100" : "border-slate-200 opacity-90 hover:opacity-100"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={getDisplayImageUrl(img)} alt="" className="h-full w-full object-cover" />
-                      </button>
-                    ))}
+                    {product.variants.flatMap((variant, vIdx) =>
+                      variant.images.map((img, imgIdx) => {
+                        const selected = vIdx === variantIndex && imgIdx === imageIndex;
+                        return (
+                          <button
+                            key={`${vIdx}-${imgIdx}`}
+                            type="button"
+                            onClick={() => {
+                              setVariantIndex(vIdx);
+                              setImageIndex(imgIdx);
+                            }}
+                            className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
+                              selected ? "border-violet-500 shadow-md ring-2 ring-violet-100" : "border-slate-200 opacity-90 hover:opacity-100"
+                            }`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={getDisplayImageUrl(img)} alt={variant.colorName} className="h-full w-full object-cover" />
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               ) : null}
