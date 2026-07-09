@@ -129,7 +129,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
       }
       return [...prev, { color: activeColor, size, quantity: activeQuantity }];
     });
-    setAddNotice(`"${activeColor} (${size})" অর্ডারে যোগ করা হয়েছে!`);
+    setAddNotice(`"${activeColor} (${size})" কার্টে যোগ করা হয়েছে!`);
     setActiveQuantity(1);
     setTimeout(() => setAddNotice(null), 3000);
   };
@@ -474,7 +474,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                     disabled={!size}
                     className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-900/10 transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    ➕ আর একটি কালার/সাইজ যোগ করুন
+                    ➕ কার্টে যোগ করুন
                   </button>
                 </div>
                 {addNotice ? (
