@@ -805,31 +805,23 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 lg:items-end lg:text-right">
+            <div className="flex flex-col gap-2 lg:items-end lg:text-right">
               <p className="text-[10px] font-semibold uppercase tracking-[0.38em] text-slate-500">Developed by</p>
               <a
                 href="https://websy.bd"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex max-w-sm items-center gap-4 rounded-2xl border border-transparent bg-transparent p-0 transition lg:ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-400/60"
+                className="group flex flex-col items-center gap-1 rounded-2xl p-0 transition lg:ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400/60"
               >
-                <div className="min-w-0 flex-1 text-left lg:text-right">
-                  <p className="font-display text-lg font-semibold text-rose-400 transition group-hover:text-rose-300">
-                    Websy
-                  </p>
-                  <p className="mt-0.5 text-xs font-medium tracking-wide text-rose-500/80 transition group-hover:text-rose-400">
-                    websy.bd
-                  </p>
-                </div>
-                <div className="flex items-center bg-white/5 px-3 py-2 rounded-xl border border-white/10 transition group-hover:bg-white/10">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://websy.bd/logo-dark.svg"
-                    alt="Websy"
-                    className="h-6 w-auto object-contain brightness-0 invert"
-                  />
-                  <span className="text-xs font-bold text-white lowercase select-none self-end mb-0.5 ml-[-6px]">.bd</span>
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/websy-white.png"
+                  alt="Websy"
+                  className="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                />
+                <span className="text-xs font-normal tracking-wide text-white/70 transition group-hover:text-violet-200">
+                  websy.bd
+                </span>
               </a>
             </div>
           </div>
