@@ -808,27 +808,28 @@ export function ProductShowcase({ product }: { product: ProductData }) {
             <div className="flex flex-col gap-3 lg:items-end lg:text-right">
               <p className="text-[10px] font-semibold uppercase tracking-[0.38em] text-slate-500">Developed by</p>
               <a
-                href="https://mahinahmad.com"
+                href="https://websy.bd"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex max-w-sm items-center gap-4 rounded-2xl border border-transparent bg-transparent p-0 transition lg:ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400/60"
+                className="group flex max-w-sm items-center gap-4 rounded-2xl border border-transparent bg-transparent p-0 transition lg:ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-400/60"
               >
                 <div className="min-w-0 flex-1 text-left lg:text-right">
-                  <p className="font-display text-lg font-semibold text-red-400 transition group-hover:text-red-300">
-                    Mahin Ahmad
+                  <p className="font-display text-lg font-semibold text-rose-400 transition group-hover:text-rose-300">
+                    Websy
                   </p>
-                  <p className="mt-0.5 text-xs font-medium tracking-wide text-red-500/85 transition group-hover:text-red-400">
-                    mahinahmad.com
+                  <p className="mt-0.5 text-xs font-medium tracking-wide text-rose-500/80 transition group-hover:text-rose-400">
+                    websy.bd
                   </p>
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://mahinahmad.com/profile.jpg"
-                  alt="Mahin Ahmad"
-                  width={56}
-                  height={56}
-                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-red-500/20 transition group-hover:ring-red-400/45"
-                />
+                <div className="flex items-center bg-white/5 px-3 py-2 rounded-xl border border-white/10 transition group-hover:bg-white/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://websy.bd/logo-dark.svg"
+                    alt="Websy"
+                    className="h-6 w-auto object-contain brightness-0 invert"
+                  />
+                  <span className="text-xs font-bold text-white lowercase select-none self-end mb-0.5 ml-[-6px]">.bd</span>
+                </div>
               </a>
             </div>
           </div>
