@@ -232,17 +232,18 @@ export function ProductShowcase({ product }: { product: ProductData }) {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-100 via-stone-50 to-zinc-100 text-zinc-900">
+    <main className="min-h-screen bg-gradient-to-b from-zinc-100 via-stone-50 to-zinc-100 text-zinc-900 overflow-x-hidden w-full max-w-full">
+      <div className="w-full max-w-full overflow-x-hidden relative flex flex-col min-h-screen">
       <header className="sticky top-0 z-30 border-b border-violet-200/60 bg-gradient-to-b from-white to-violet-50/90 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_6px_20px_-8px_rgba(91,33,182,0.12)] backdrop-blur-md">
-        <div className="container-page flex min-h-14 items-center justify-between gap-3 py-2.5">
-          <div className="flex items-center gap-2.5">
+        <div className="container-page flex min-h-12 sm:min-h-14 items-center justify-between gap-1.5 sm:gap-3 py-1.5 sm:py-2.5">
+          <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.jpeg"
               alt={companyName}
-              className="h-10 w-10 rounded-full object-cover shadow-md ring-2 ring-white ring-offset-2 ring-offset-violet-100"
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover shadow-md ring-2 ring-white ring-offset-2 ring-offset-violet-100"
             />
-            <p className="font-display text-lg font-semibold tracking-tight text-violet-800">{companyName}</p>
+            <p className="font-display text-sm sm:text-base md:text-lg font-semibold tracking-tight text-violet-800">{companyName}</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <a
@@ -254,9 +255,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
             </a>
             <a
               href={whatsappLink}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/15 transition hover:bg-[#20BD5A] hover:shadow-lg"
+              className="inline-flex min-h-9 sm:min-h-11 items-center gap-1.5 sm:gap-2 rounded-full bg-[#25D366] px-2.5 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-black/15 transition hover:bg-[#20BD5A] hover:shadow-lg"
             >
-              <WhatsAppIcon className="h-5 w-5 shrink-0 text-white" />
+              <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-white" />
               WhatsApp
             </a>
           </div>
@@ -794,18 +795,18 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
           {/* Stats strip — full width above footer (reference layout) */}
           <div className="w-full rounded-2xl bg-white px-4 py-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 md:rounded-3xl md:px-8 md:py-10">
-            <div className="mx-auto grid max-w-4xl grid-cols-3 gap-4 text-center md:gap-8">
+            <div className="mx-auto grid max-w-4xl grid-cols-3 gap-1.5 text-center sm:gap-8">
               <div>
-                <p className="text-2xl font-bold text-violet-600 md:text-3xl">৫.০</p>
-                <p className="mt-1 text-xs font-medium text-slate-600 md:text-sm">গড় রেটিং</p>
+                <p className="text-xl font-bold text-violet-600 sm:text-2xl md:text-3xl">৫.০</p>
+                <p className="mt-1 text-[9px] font-bold leading-tight text-slate-600 sm:text-xs md:text-sm">গড় রেটিং</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-teal-600 md:text-3xl">১২০০+</p>
-                <p className="mt-1 text-xs font-medium text-slate-600 md:text-sm">সন্তুষ্ট গ্রাহক</p>
+                <p className="text-xl font-bold text-teal-600 sm:text-2xl md:text-3xl">১২০০+</p>
+                <p className="mt-1 text-[9px] font-bold leading-tight text-slate-600 sm:text-xs md:text-sm">সন্তুষ্ট গ্রাহক</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-cyan-600 md:text-3xl">৯৯%</p>
-                <p className="mt-1 text-xs font-medium text-slate-600 md:text-sm">ইতিবাচক রিভিউ</p>
+                <p className="text-xl font-bold text-cyan-600 sm:text-2xl md:text-3xl">৯৯%</p>
+                <p className="mt-1 text-[9px] font-bold leading-tight text-slate-600 sm:text-xs md:text-sm">ইতিবাচক রিভিউ</p>
               </div>
             </div>
           </div>
@@ -909,6 +910,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
             <WhatsAppIcon className="h-5 w-5 shrink-0" />
             WhatsApp
           </a>
+        </div>
         </div>
       </div>
     </main>

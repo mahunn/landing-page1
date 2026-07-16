@@ -4,9 +4,18 @@ import { Suspense } from "react";
 import { MetaPixel } from "@/components/meta-pixel";
 import "./globals.css";
 
+import type { Viewport } from "next";
+
 export const metadata: Metadata = {
   title: "Glamora",
   description: "Glamora product landing and admin panel"
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
 };
 
 const inter = Inter({
