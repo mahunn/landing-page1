@@ -9,7 +9,8 @@ import { getDisplayImageUrl } from "@/lib/image-helper";
 import type { OrderItem } from "@/lib/order-store";
 
 function toMoney(amount: number): string {
-  return `৳${Math.round(amount)}`;
+  const enFormatted = Math.round(amount).toLocaleString("en-US");
+  return `৳${toBanglaDigits(enFormatted)}`;
 }
 
 function finalPrice(data: ProductData): number {
@@ -27,7 +28,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-function toBanglaDigits(n: number): string {
+function toBanglaDigits(n: number | string): string {
   const map: Record<string, string> = {
     "0": "০",
     "1": "১",
@@ -51,26 +52,36 @@ export function ProductShowcase({ product }: { product: ProductData }) {
   const phoneSource = product.whatsappNumber || product.callNumber;
   const contactDigits = useMemo(() => toBdInternationalDigits(phoneSource), [phoneSource]);
   const displayContact = useMemo(() => formatBdLocalDisplay(phoneSource), [phoneSource]);
-  const [variantIndex, setVariantIndex] = useState(0);
-  const [size, setSize] = useState(product.variants[0]?.sizes[0] ?? "");
+  // Track active variant index for image gallery viewing
+  const [activeVariantIndex, setActiveVariantIndex] = useState(0);
   const [imageIndex, setImageIndex] = useState(0);
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(0);
 
-  // Multiple items ordering states
-  const [items, setItems] = useState<OrderItem[]>([]);
-  const [activeQuantity, setActiveQuantity] = useState(1);
-  const [addNotice, setAddNotice] = useState<string | null>(null);
+  // Multiple items selection states
+  const [selectedColors, setSelectedColors] = useState<Record<string, boolean>>(() => {
+    const firstColor = product.variants[0]?.colorName;
+    return firstColor ? { [firstColor]: true } : {};
+  });
 
-  const currentVariant = product.variants[variantIndex];
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(() => {
+    const firstColor = product.variants[0]?.colorName;
+    const firstSize = product.variants[0]?.sizes[0];
+    return firstColor && firstSize ? { [firstColor]: firstSize } : {};
+  });
+
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>(() => {
+    const firstColor = product.variants[0]?.colorName;
+    return firstColor ? { [firstColor]: 1 } : {};
+  });
+
+  const currentVariant = product.variants[activeVariantIndex];
   const images = currentVariant?.images ?? [];
   const activeImage = images[imageIndex] ?? "";
 
-  // Reset active quantity and size when color changes
+  // Sync active variant gallery image when variant index changes
   useEffect(() => {
-    setSize(currentVariant?.sizes[0] ?? "");
     setImageIndex(0);
-    setActiveQuantity(1);
-  }, [variantIndex, currentVariant?.sizes]);
+  }, [activeVariantIndex]);
 
   const discountedPrice = useMemo(() => finalPrice(product), [product]);
   const savedAmount = Math.max(0, product.basePrice - discountedPrice);
@@ -88,64 +99,95 @@ export function ProductShowcase({ product }: { product: ProductData }) {
         ? `-${toBanglaDigits(percentOff)}% ছাড়`
         : "";
 
-  const currentSelection = useMemo(() => ({
-    color: currentVariant?.colorName || "",
-    size: size,
-    quantity: activeQuantity
-  }), [currentVariant?.colorName, size, activeQuantity]);
-
-  const displayItems = useMemo(() => {
-    return items.length > 0 ? items : [currentSelection];
-  }, [items, currentSelection]);
+  // Compute ordered items dynamically from selection states
+  const orderItems = useMemo<OrderItem[]>(() => {
+    return product.variants
+      .filter((v) => selectedColors[v.colorName])
+      .map((v) => ({
+        color: v.colorName,
+        size: selectedSizes[v.colorName] || "",
+        quantity: selectedQuantities[v.colorName] || 1
+      }));
+  }, [product.variants, selectedColors, selectedSizes, selectedQuantities]);
 
   const totalQuantity = useMemo(() => {
-    return displayItems.reduce((sum, item) => sum + item.quantity, 0);
-  }, [displayItems]);
+    return orderItems.reduce((sum, item) => sum + item.quantity, 0);
+  }, [orderItems]);
 
   const totalPrice = useMemo(() => {
     return discountedPrice * totalQuantity;
   }, [discountedPrice, totalQuantity]);
 
   const whatsappLink = useMemo(() => {
-    const itemSummaryText = displayItems
+    const itemSummaryText = orderItems
       .map((item) => `${item.color} (${item.size}) - ${item.quantity}টি`)
       .join(", ");
     return `https://wa.me/${contactDigits}?text=${encodeURIComponent(
       `অর্ডার করতে চাই: ${product.title} — [ ${itemSummaryText} ]`
     )}`;
-  }, [contactDigits, product.title, displayItems]);
+  }, [contactDigits, product.title, orderItems]);
   const callLink = `tel:+${contactDigits}`;
   const [orderState, orderAction, orderPending] = useActionState(placeOrderAction, {});
 
-  const handleAddItem = () => {
-    if (!size) return;
-    const activeColor = currentVariant?.colorName || "";
-    setItems((prev) => {
-      const idx = prev.findIndex((item) => item.color === activeColor && item.size === size);
-      if (idx > -1) {
-        const next = [...prev];
-        next[idx] = { ...next[idx], quantity: next[idx].quantity + activeQuantity };
-        return next;
-      }
-      return [...prev, { color: activeColor, size, quantity: activeQuantity }];
+  const handleCardClick = (idx: number) => {
+    setActiveVariantIndex(idx);
+    const variant = product.variants[idx];
+    if (!variant) return;
+
+    setSelectedColors((prev) => {
+      const next = { ...prev };
+      next[variant.colorName] = true;
+      return next;
     });
-    setAddNotice(`"${activeColor} (${size})" কার্টে যোগ করা হয়েছে!`);
-    setActiveQuantity(1);
-    setTimeout(() => setAddNotice(null), 3000);
+
+    // Auto-select first size if none selected yet for this color
+    if (!selectedSizes[variant.colorName] && variant.sizes.length > 0) {
+      setSelectedSizes((prev) => ({ ...prev, [variant.colorName]: variant.sizes[0] }));
+    }
   };
 
-  const handleRemoveItem = (idx: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== idx));
-  };
+  const handleCheckboxToggle = (idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const variant = product.variants[idx];
+    if (!variant) return;
 
-  const handleUpdateItemQty = (idx: number, delta: number) => {
-    setItems((prev) => {
-      const next = [...prev];
-      const nextQty = next[idx].quantity + delta;
-      if (nextQty <= 0) {
-        return prev.filter((_, i) => i !== idx);
+    setSelectedColors((prev) => {
+      const next = { ...prev };
+      if (next[variant.colorName]) {
+        delete next[variant.colorName];
+      } else {
+        next[variant.colorName] = true;
+        // Auto-select first size if none selected yet for this color
+        if (!selectedSizes[variant.colorName] && variant.sizes.length > 0) {
+          setSelectedSizes((sPrev) => ({ ...sPrev, [variant.colorName]: variant.sizes[0] }));
+        }
       }
-      next[idx] = { ...next[idx], quantity: nextQty };
+      return next;
+    });
+    setActiveVariantIndex(idx);
+  };
+
+  const handleUpdateItemQty = (colorName: string, delta: number) => {
+    setSelectedQuantities((prev) => {
+      const currentQty = prev[colorName] || 1;
+      const nextQty = currentQty + delta;
+      if (nextQty <= 0) {
+        // Uncheck color if quantity goes to 0
+        setSelectedColors((cPrev) => {
+          const nextColors = { ...cPrev };
+          delete nextColors[colorName];
+          return nextColors;
+        });
+        return prev;
+      }
+      return { ...prev, [colorName]: nextQty };
+    });
+  };
+
+  const handleRemoveItem = (colorName: string) => {
+    setSelectedColors((prev) => {
+      const next = { ...prev };
+      delete next[colorName];
       return next;
     });
   };
@@ -268,13 +310,13 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5">
                     {product.variants.flatMap((variant, vIdx) =>
                       variant.images.map((img, imgIdx) => {
-                        const selected = vIdx === variantIndex && imgIdx === imageIndex;
+                        const selected = vIdx === activeVariantIndex && imgIdx === imageIndex;
                         return (
                           <button
                             key={`${vIdx}-${imgIdx}`}
                             type="button"
                             onClick={() => {
-                              setVariantIndex(vIdx);
+                              setActiveVariantIndex(vIdx);
                               setImageIndex(imgIdx);
                             }}
                             className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
@@ -361,24 +403,28 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </a>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-4">
-                {[
-                  { icon: "🚚", label: "সারাদেশে ডেলিভারি" },
-                  { icon: "💵", label: "ক্যাশ অন ডেলিভারি" },
-                  { icon: "✓", label: "১০০% অরিজিনাল" },
-                  { icon: "↻", label: "সহজ এক্সচেঞ্জ" }
-                ].map((item) => (
-                  <div key={item.label} className="flex flex-col items-center gap-1.5 text-center">
-                    <span className="text-xl" aria-hidden>
-                      {item.icon}
-                    </span>
-                    <span className="text-[11px] font-medium leading-tight text-slate-600 sm:text-xs">{item.label}</span>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            {/* Color / size */}
+            {/* Badges Grid (relocated to match the screenshot) */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {[
+                { icon: "🚚", label: "সারাদেশে ডেলিভারি" },
+                { icon: "💵", label: "ক্যাশ অন ডেলিভারি" },
+                { icon: "✓", label: "১০০% অরিজিনাল" }
+              ].map((item) => (
+                <div 
+                  key={item.label} 
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-slate-100 bg-white p-2.5 text-center shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition duration-200 hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
+                >
+                  <span className="text-xl md:text-2xl" aria-hidden>
+                    {item.icon}
+                  </span>
+                  <span className="text-[10px] font-bold leading-tight text-slate-700 sm:text-xs">{item.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Color / size Selector (Matches user screenshot) */}
             <div className="rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ring-1 ring-slate-100 md:p-6">
               <div className="flex items-center gap-2">
                 <span className="text-lg" aria-hidden>
@@ -386,110 +432,98 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </span>
                 <div>
                   <p className="text-base font-bold text-slate-900">রঙ ও সাইজ সিলেক্ট করুন</p>
-                  <p className="text-xs text-slate-500">একটি রঙ সিলেক্ট করুন, তারপর সাইজ বেছে নিন</p>
+                  <p className="text-xs text-slate-500">একাধিক রঙ সিলেক্ট করতে পারবেন</p>
                 </div>
               </div>
-              <div className="mt-4 space-y-2">
+
+              <div className="mt-4 space-y-3">
                 {product.variants.map((variant, idx) => {
                   const previewImage = variant.images[0];
-                  const selected = idx === variantIndex;
+                  const isChecked = !!selectedColors[variant.colorName];
+                  
                   return (
-                    <button
-                      type="button"
+                    <div
                       key={`${variant.colorName}-${idx}`}
-                      onClick={() => {
-                        setVariantIndex(idx);
-                        setImageIndex(0);
-                      }}
-                      className={`flex min-h-[4.5rem] w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition ${
-                        selected ? "border-violet-500 bg-violet-50/60 ring-2 ring-violet-100" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                      onClick={() => handleCardClick(idx)}
+                      className={`relative flex flex-col rounded-2xl border p-3.5 transition-all cursor-pointer select-none ${
+                        isChecked 
+                          ? "border-violet-600 bg-violet-50/10 ring-1 ring-violet-600" 
+                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
                       }`}
                     >
-                      <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 ${
-                          selected ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 bg-white"
-                        }`}
-                        aria-hidden
-                      >
-                        {selected ? "✓" : ""}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-slate-900">{variant.colorName}</p>
-                        <p className="text-xs text-slate-500">
-                          {product.discountType !== "none" ? (
-                            <>
-                              <span className="line-through">{toMoney(product.basePrice)}</span>{" "}
-                              <span className="font-semibold text-violet-600">{toMoney(discountedPrice)}</span>
-                            </>
-                          ) : (
-                            <span className="font-semibold text-violet-600">{toMoney(discountedPrice)}</span>
+                      <div className="flex items-center gap-3">
+                        {/* Checkbox */}
+                        <div
+                          onClick={(e) => handleCheckboxToggle(idx, e)}
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-all ${
+                            isChecked
+                              ? "border-violet-600 bg-violet-600 text-white shadow-sm"
+                              : "border-slate-300 bg-white"
+                          }`}
+                        >
+                          {isChecked && (
+                            <svg className="h-4 w-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
                           )}
-                        </p>
+                        </div>
+
+                        {/* Variant Info */}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-slate-800 text-[15px] sm:text-base leading-snug">{variant.colorName}</p>
+                          <p className="text-xs sm:text-sm mt-0.5">
+                            {product.discountType !== "none" ? (
+                              <>
+                                <span className="line-through text-slate-400 mr-2">{toMoney(product.basePrice)}</span>{" "}
+                                <span className="font-bold text-violet-700">{toMoney(discountedPrice)}</span>
+                              </>
+                            ) : (
+                              <span className="font-bold text-violet-700">{toMoney(discountedPrice)}</span>
+                            )}
+                          </p>
+                        </div>
+
+                        {/* Variant Preview Image */}
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100 shadow-sm">
+                          {previewImage ? (
+                            <img src={getDisplayImageUrl(previewImage)} alt="" className="h-full w-full object-cover" />
+                          ) : null}
+                        </div>
                       </div>
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-                        {previewImage ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={getDisplayImageUrl(previewImage)} alt="" className="h-full w-full object-cover" />
-                        ) : null}
-                      </div>
-                    </button>
+
+                      {/* Sizes Section inside the Card */}
+                      {isChecked && (
+                        <div 
+                          className="mt-4 border-t border-slate-200/60 pt-3" 
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <p className="text-xs font-bold text-slate-700">সাইজ:</p>
+                          <div className="mt-2.5 flex flex-wrap gap-2">
+                            {variant.sizes.map((s) => {
+                              const isSizeSelected = selectedSizes[variant.colorName] === s;
+                              return (
+                                <button
+                                  type="button"
+                                  key={s}
+                                  onClick={() => {
+                                    setSelectedSizes((prev) => ({ ...prev, [variant.colorName]: s }));
+                                  }}
+                                  className={`min-h-11 min-w-[2.75rem] rounded-xl border px-3.5 py-1.5 text-sm font-bold shadow-sm transition active:scale-95 ${
+                                    isSizeSelected
+                                      ? "border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-900/10"
+                                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {s}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
-              </div>
-
-              <p className="mt-5 text-sm font-semibold text-slate-800">সাইজ</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {currentVariant?.sizes.map((s) => (
-                  <button
-                    type="button"
-                    key={s}
-                    className={`min-h-12 min-w-[3rem] rounded-xl border-2 px-4 py-2 text-sm font-bold transition ${
-                      s === size ? "border-violet-500 bg-violet-50 text-violet-700" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                    }`}
-                    onClick={() => setSize(s)}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-6 border-t border-slate-100 pt-5">
-                <p className="text-sm font-semibold text-slate-800">পরিমাণ</p>
-                <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 p-1">
-                    <button
-                      type="button"
-                      onClick={() => setActiveQuantity((q) => Math.max(1, q - 1))}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95"
-                    >
-                      -
-                    </button>
-                    <span className="w-12 text-center text-sm font-bold text-slate-800 tabular-nums">
-                      {activeQuantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveQuantity((q) => q + 1)}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95"
-                    >
-                      +
-                    </button>
-                  </div>
-                  
-                  <button
-                    type="button"
-                    onClick={handleAddItem}
-                    disabled={!size}
-                    className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-900/10 transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    ➕ কার্টে যোগ করুন
-                  </button>
-                </div>
-                {addNotice ? (
-                  <p className="mt-3 text-center text-xs font-semibold text-teal-600 bg-teal-50 py-1.5 px-3 rounded-xl border border-teal-100 transition duration-300">
-                    ✓ {addNotice}
-                  </p>
-                ) : null}
               </div>
             </div>
 
@@ -557,9 +591,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </div>
               </div>
 
-              <input type="hidden" name="items" value={JSON.stringify(items)} />
-              <input type="hidden" name="color" value={displayItems[0]?.color || ""} />
-              <input type="hidden" name="size" value={displayItems[0]?.size || ""} />
+              <input type="hidden" name="items" value={JSON.stringify(orderItems)} />
+              <input type="hidden" name="color" value={orderItems[0]?.color || ""} />
+              <input type="hidden" name="size" value={orderItems[0]?.size || ""} />
               <input type="hidden" name="quantity" value={totalQuantity} />
               
               <div className="grid gap-4 sm:grid-cols-2">
@@ -573,38 +607,38 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </div>
               </div>
 
-              {/* Items List (only shown if they have explicitly added items) */}
-              {items.length > 0 ? (
+              {/* Items List - Shows selected colors and sizes directly with quantity modifiers */}
+              {orderItems.length > 0 ? (
                 <div className="rounded-2xl border border-violet-100 bg-violet-50/20 p-4">
                   <p className="text-sm font-bold text-slate-800 mb-3">অর্ডারকৃত আইটেমসমূহ:</p>
                   <div className="space-y-2">
-                    {items.map((item, idx) => (
-                      <div key={`${item.color}-${item.size}-${idx}`} className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    {orderItems.map((item, idx) => (
+                      <div key={`${item.color}-${item.size}-${idx}`} className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm animate-fadeIn">
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-slate-900 truncate">{item.color}</p>
-                          <p className="text-xs text-slate-500">সাইজ: {item.size}</p>
+                          <p className="text-xs text-slate-500">সাইজ: {item.size || "সিলেক্ট করা হয়নি"}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => handleUpdateItemQty(idx, -1)}
+                            onClick={() => handleUpdateItemQty(item.color, -1)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold transition"
                           >
                             -
                           </button>
                           <span className="w-6 text-center text-sm font-semibold text-slate-800 tabular-nums">
-                            {item.quantity}
+                            {toBanglaDigits(item.quantity)}
                           </span>
                           <button
                             type="button"
-                            onClick={() => handleUpdateItemQty(idx, 1)}
+                            onClick={() => handleUpdateItemQty(item.color, 1)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold transition"
                           >
                             +
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleRemoveItem(idx)}
+                            onClick={() => handleRemoveItem(item.color)}
                             className="ml-2 rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 transition"
                             aria-label="মুছে ফেলুন"
                           >
@@ -620,25 +654,15 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-bold text-slate-800">অর্ডার সামারি</p>
                 <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
-                  {items.length > 0 ? (
-                    items.map((item, idx) => (
+                  {orderItems.length > 0 ? (
+                    orderItems.map((item, idx) => (
                       <li key={idx} className="flex justify-between border-b border-slate-200/50 pb-1.5 last:border-0 last:pb-0">
-                        <span>{item.color} ({item.size}) x{item.quantity}</span>
+                        <span>{item.color} ({item.size || "সাইজ সিলেক্ট করুন"}) x{toBanglaDigits(item.quantity)}</span>
                         <span className="font-semibold text-slate-900">{toMoney(discountedPrice * item.quantity)}</span>
                       </li>
                     ))
                   ) : (
-                    <>
-                      <li>
-                        রঙ: <span className="font-medium text-slate-900">{currentVariant?.colorName}</span>
-                      </li>
-                      <li>
-                        সাইজ: <span className="font-medium text-slate-900">{size || "—"}</span>
-                      </li>
-                      <li>
-                        ইউনিট মূল্য: <span className="font-medium text-slate-900">{toMoney(discountedPrice)}</span>
-                      </li>
-                    </>
+                    <li className="text-center text-slate-500 py-2">কোনো পণ্য সিলেক্ট করা হয়নি</li>
                   )}
                   <li className="flex justify-between pt-2 font-bold text-slate-900 border-t border-slate-200">
                     <span>মোট পরিমাণ:</span>
@@ -649,10 +673,16 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                     <span>{toMoney(totalPrice)}</span>
                   </li>
                 </ul>
-                {!size && items.length === 0 ? (
+                {orderItems.some(item => !item.size) && orderItems.length > 0 ? (
                   <p className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
                     <span aria-hidden>⚠️</span>
-                    অনুগ্রহ করে সাইজ সিলেক্ট করুন
+                    অনুগ্রহ করে প্রতিটি সিলেক্ট করা রঙের সাইজ সিলেক্ট করুন
+                  </p>
+                ) : null}
+                {orderItems.length === 0 ? (
+                  <p className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">
+                    <span aria-hidden>⚠️</span>
+                    অনুগ্রহ করে অন্তত একটি রঙ ও সাইজ সিলেক্ট করুন
                   </p>
                 ) : null}
               </div>
@@ -662,7 +692,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
               <button
                 type="submit"
-                disabled={orderPending || (!size && items.length === 0)}
+                disabled={orderPending || orderItems.length === 0 || orderItems.some(item => !item.size)}
                 className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-indigo-900/20 hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span aria-hidden>✓</span>
