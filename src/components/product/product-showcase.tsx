@@ -312,7 +312,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               </div>
 
               {product.variants.length > 0 ? (
-                <div className="relative mt-3">
+                <div className="relative mt-3 w-full overflow-hidden">
                   <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5">
                     {product.variants.flatMap((variant, vIdx) =>
                       variant.images.map((img, imgIdx) => {
@@ -420,7 +420,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               ].map((item) => (
                 <div 
                   key={item.label} 
-                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-slate-100 bg-white p-2.5 text-center shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition duration-200 hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-slate-100 bg-white p-1.5 sm:p-2.5 text-center shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition duration-200 hover:shadow-[0_6px_16px_rgba(0,0,0,0.06)]"
                 >
                   <span className="text-xl md:text-2xl" aria-hidden>
                     {item.icon}
@@ -677,9 +677,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
                     {orderItems.length > 0 ? (
                       orderItems.map((item, idx) => (
-                        <li key={idx} className="flex justify-between border-b border-slate-200/50 pb-1.5 last:border-0 last:pb-0">
-                          <span>{item.color} ({item.size || "সাইজ সিলেক্ট করুন"}) x{toBanglaDigits(item.quantity)}</span>
-                          <span className="font-semibold text-slate-900">{toMoney(discountedPrice * item.quantity)}</span>
+                        <li key={idx} className="flex justify-between gap-2 border-b border-slate-200/50 pb-1.5 last:border-0 last:pb-0">
+                          <span className="break-all sm:break-normal">{item.color} ({item.size || "সাইজ সিলেক্ট করুন"}) x{toBanglaDigits(item.quantity)}</span>
+                          <span className="font-semibold text-slate-900 shrink-0">{toMoney(discountedPrice * item.quantity)}</span>
                         </li>
                       ))
                     ) : (
@@ -687,18 +687,18 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                     )}
                     {/* Delivery Charge Line Item */}
                     {orderItems.length > 0 && (
-                      <li className="flex justify-between border-b border-slate-200/50 pb-1.5 text-slate-600">
+                      <li className="flex justify-between gap-2 border-b border-slate-200/50 pb-1.5 text-slate-600">
                         <span>ডেলিভারি চার্জ ({deliveryZone === "inside" ? "ঢাকা সিটি" : "ঢাকার বাইরে"}):</span>
-                        <span className="font-semibold text-slate-900">{toMoney(deliveryCharge)}</span>
+                        <span className="font-semibold text-slate-900 shrink-0">{toMoney(deliveryCharge)}</span>
                       </li>
                     )}
-                    <li className="flex justify-between pt-2 font-bold text-slate-900 border-t border-slate-200">
+                    <li className="flex justify-between gap-2 pt-2 font-bold text-slate-900 border-t border-slate-200">
                       <span>মোট পরিমাণ:</span>
-                      <span>{toBanglaDigits(totalQuantity)} পিস</span>
+                      <span className="shrink-0">{toBanglaDigits(totalQuantity)} পিস</span>
                     </li>
-                    <li className="flex justify-between font-bold text-violet-700 text-base">
+                    <li className="flex justify-between gap-2 font-bold text-violet-700 text-base">
                       <span>সর্বমোট মূল্য:</span>
-                      <span>{toMoney(totalPrice)}</span>
+                      <span className="shrink-0">{toMoney(totalPrice)}</span>
                     </li>
                   </ul>
                 {orderItems.some(item => !item.size) && orderItems.length > 0 ? (
@@ -821,9 +821,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
           }}
         />
         <div className="container-page relative mx-auto py-14 md:py-20 lg:py-24">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-end lg:gap-20">
-            <div className="max-w-lg">
-              <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center justify-center text-center gap-8">
+            <div className="flex flex-col items-center justify-center max-w-lg">
+              <div className="flex flex-col items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo.jpeg"
@@ -838,7 +838,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
 
               <a
                 href={callLink}
-                className="group mt-8 inline-flex items-center gap-3 text-base font-medium tracking-tight text-white transition hover:text-orange-200"
+                className="group mt-6 inline-flex items-center gap-3 text-base font-medium tracking-tight text-white transition hover:text-orange-200"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20 text-orange-300 ring-1 ring-orange-400/35 transition group-hover:bg-orange-500/30">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -852,24 +852,24 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 <span className="tabular-nums">{displayContact}</span>
               </a>
 
-              <p className="mt-6 max-w-md text-sm font-light leading-relaxed text-slate-400 md:text-[15px]">
+              <p className="mt-4 text-sm font-light leading-relaxed text-slate-400 md:text-[15px]">
                 ক্যাশ অন ডেলিভারি <span className="mx-2 text-slate-600">|</span> সারাদেশে ডেলিভারি
               </p>
 
-              <div className="mt-10 h-px w-16 bg-gradient-to-r from-orange-400/70 to-transparent" aria-hidden />
+              <div className="mt-6 h-px w-16 bg-gradient-to-r from-transparent via-orange-400/70 to-transparent mx-auto" aria-hidden />
 
               <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.22em] text-slate-600">
                 © {new Date().getFullYear()} সর্বস্বত্ব সংরক্ষিত
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 lg:items-end lg:text-right">
+            <div className="flex flex-col items-center justify-center gap-2 text-center">
               <p className="text-[10px] font-semibold uppercase tracking-[0.38em] text-slate-500">Developed by</p>
               <a
                 href="https://websy.bd"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-1 rounded-2xl p-0 transition lg:ml-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400/60"
+                className="group flex flex-col items-center gap-1 rounded-2xl p-0 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400/60"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
