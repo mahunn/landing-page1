@@ -57,6 +57,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(0);
 
+  // Delivery zone state (binds to order summary in real-time)
+  const [deliveryZone, setDeliveryZone] = useState<"inside" | "outside">("outside");
+
   // Multiple items selection states
   const [selectedColors, setSelectedColors] = useState<Record<string, boolean>>(() => {
     const firstColor = product.variants[0]?.colorName;
@@ -114,9 +117,12 @@ export function ProductShowcase({ product }: { product: ProductData }) {
     return orderItems.reduce((sum, item) => sum + item.quantity, 0);
   }, [orderItems]);
 
+  const deliveryCharge = deliveryZone === "inside" ? 80 : 150;
+
   const totalPrice = useMemo(() => {
-    return discountedPrice * totalQuantity;
-  }, [discountedPrice, totalQuantity]);
+    if (totalQuantity === 0) return 0;
+    return (discountedPrice * totalQuantity) + deliveryCharge;
+  }, [discountedPrice, totalQuantity, deliveryCharge]);
 
   const whatsappLink = useMemo(() => {
     const itemSummaryText = orderItems
@@ -379,7 +385,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               ) : null}
 
               <a
-                href="#order-form"
+                href="#color-selector"
                 className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-orange-900/15 transition hover:bg-orange-400"
               >
                 <span aria-hidden>🛒</span>
@@ -419,13 +425,13 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                   <span className="text-xl md:text-2xl" aria-hidden>
                     {item.icon}
                   </span>
-                  <span className="text-[10px] font-bold leading-tight text-slate-700 sm:text-xs">{item.label}</span>
+                  <span className="text-[9px] font-bold leading-tight text-slate-700 sm:text-xs break-words">{item.label}</span>
                 </div>
               ))}
             </div>
 
             {/* Color / size Selector (Matches user screenshot) */}
-            <div className="rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ring-1 ring-slate-100 md:p-6">
+            <div id="color-selector" className="rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] ring-1 ring-slate-100 md:p-6">
               <div className="flex items-center gap-2">
                 <span className="text-lg" aria-hidden>
                   🎨
@@ -581,11 +587,26 @@ export function ProductShowcase({ product }: { product: ProductData }) {
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50">
-                    <input type="radio" name="deliveryZone" value="outside" defaultChecked className="h-4 w-4 accent-violet-600" required />
+                    <input 
+                      type="radio" 
+                      name="deliveryZone" 
+                      value="outside" 
+                      checked={deliveryZone === "outside"}
+                      onChange={() => setDeliveryZone("outside")}
+                      className="h-4 w-4 accent-violet-600" 
+                      required 
+                    />
                     <span className="text-sm font-medium text-slate-800">ঢাকা সিটির বাইরে (১৫০ টাকা)</span>
                   </label>
                   <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50">
-                    <input type="radio" name="deliveryZone" value="inside" className="h-4 w-4 accent-violet-600" />
+                    <input 
+                      type="radio" 
+                      name="deliveryZone" 
+                      value="inside" 
+                      checked={deliveryZone === "inside"}
+                      onChange={() => setDeliveryZone("inside")}
+                      className="h-4 w-4 accent-violet-600" 
+                    />
                     <span className="text-sm font-medium text-slate-800">ঢাকা সিটির ভিতরে (৮০ টাকা)</span>
                   </label>
                 </div>
@@ -652,27 +673,34 @@ export function ProductShowcase({ product }: { product: ProductData }) {
               ) : null}
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-bold text-slate-800">অর্ডার সামারি</p>
-                <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
-                  {orderItems.length > 0 ? (
-                    orderItems.map((item, idx) => (
-                      <li key={idx} className="flex justify-between border-b border-slate-200/50 pb-1.5 last:border-0 last:pb-0">
-                        <span>{item.color} ({item.size || "সাইজ সিলেক্ট করুন"}) x{toBanglaDigits(item.quantity)}</span>
-                        <span className="font-semibold text-slate-900">{toMoney(discountedPrice * item.quantity)}</span>
+                  <p className="text-sm font-bold text-slate-800">অর্ডার সামারি</p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
+                    {orderItems.length > 0 ? (
+                      orderItems.map((item, idx) => (
+                        <li key={idx} className="flex justify-between border-b border-slate-200/50 pb-1.5 last:border-0 last:pb-0">
+                          <span>{item.color} ({item.size || "সাইজ সিলেক্ট করুন"}) x{toBanglaDigits(item.quantity)}</span>
+                          <span className="font-semibold text-slate-900">{toMoney(discountedPrice * item.quantity)}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-center text-slate-500 py-2">কোনো পণ্য সিলেক্ট করা হয়নি</li>
+                    )}
+                    {/* Delivery Charge Line Item */}
+                    {orderItems.length > 0 && (
+                      <li className="flex justify-between border-b border-slate-200/50 pb-1.5 text-slate-600">
+                        <span>ডেলিভারি চার্জ ({deliveryZone === "inside" ? "ঢাকা সিটি" : "ঢাকার বাইরে"}):</span>
+                        <span className="font-semibold text-slate-900">{toMoney(deliveryCharge)}</span>
                       </li>
-                    ))
-                  ) : (
-                    <li className="text-center text-slate-500 py-2">কোনো পণ্য সিলেক্ট করা হয়নি</li>
-                  )}
-                  <li className="flex justify-between pt-2 font-bold text-slate-900 border-t border-slate-200">
-                    <span>মোট পরিমাণ:</span>
-                    <span>{toBanglaDigits(totalQuantity)} পিস</span>
-                  </li>
-                  <li className="flex justify-between font-bold text-violet-700 text-base">
-                    <span>সর্বমোট মূল্য:</span>
-                    <span>{toMoney(totalPrice)}</span>
-                  </li>
-                </ul>
+                    )}
+                    <li className="flex justify-between pt-2 font-bold text-slate-900 border-t border-slate-200">
+                      <span>মোট পরিমাণ:</span>
+                      <span>{toBanglaDigits(totalQuantity)} পিস</span>
+                    </li>
+                    <li className="flex justify-between font-bold text-violet-700 text-base">
+                      <span>সর্বমোট মূল্য:</span>
+                      <span>{toMoney(totalPrice)}</span>
+                    </li>
+                  </ul>
                 {orderItems.some(item => !item.size) && orderItems.length > 0 ? (
                   <p className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
                     <span aria-hidden>⚠️</span>
@@ -792,7 +820,7 @@ export function ProductShowcase({ product }: { product: ProductData }) {
             backgroundImage: "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139,92,246,0.14), transparent 55%)"
           }}
         />
-        <div className="container-page relative mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-20 lg:py-24">
+        <div className="container-page relative mx-auto py-14 md:py-20 lg:py-24">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-end lg:gap-20">
             <div className="max-w-lg">
               <div className="flex items-center gap-4">
@@ -867,9 +895,9 @@ export function ProductShowcase({ product }: { product: ProductData }) {
       </a>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/90 p-3 backdrop-blur-md md:hidden">
-        <div className="container-page flex gap-2">
+        <div className="flex gap-2 max-w-6xl mx-auto px-4">
           <a
-            href="#order-form"
+            href="#color-selector"
             className="min-h-12 flex-1 rounded-2xl bg-orange-500 px-3 py-3 text-center text-sm font-bold text-white shadow-md"
           >
             অর্ডার করুন
