@@ -9,6 +9,7 @@ import {
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import { ProductBasicsForm } from "@/components/admin/product-basics-form";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { isAuthenticated } from "@/lib/auth";
 import { readProductData } from "@/lib/product-store";
 import { getDisplayImageUrl } from "@/lib/image-helper";
@@ -16,7 +17,7 @@ import { getDisplayImageUrl } from "@/lib/image-helper";
 export default async function AdminProductPage() {
   const authed = await isAuthenticated();
   if (!authed) redirect("/admin/login");
-  const product = await readProductData();
+  const product = await readProductData(true);
 
   return (
     <section className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6">
@@ -133,9 +134,11 @@ export default async function AdminProductPage() {
                         <p className="text-[10px] text-slate-400 mt-1">পণ্যটির কোনো নতুন ছবি যোগ করতে চাইলে এখান থেকে ফাইল সিলেক্ট করুন।</p>
                       </div>
 
-                      <button className="w-full min-h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm hover:shadow-md transition duration-200">
-                        ভ্যারিয়েন্ট আপডেট করুন (সেভ)
-                      </button>
+                      <SubmitButton
+                        label="ভ্যারিয়েন্ট আপডেট করুন (সেভ)"
+                        loadingLabel="আপডেট হচ্ছে..."
+                        className="w-full min-h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm hover:shadow-md transition duration-200"
+                      />
                     </form>
 
                     {/* Manage uploaded images */}
@@ -197,12 +200,12 @@ export default async function AdminProductPage() {
                                 <form action={removeVariantImage}>
                                   <input type="hidden" name="variantIndex" value={idx} />
                                   <input type="hidden" name="imageIndex" value={imageIndex} />
-                                  <button
-                                    title="ছবি মুছুন"
+                                  <ConfirmSubmitButton
+                                    label="মুছুন"
+                                    loadingLabel="মুছা হচ্ছে..."
                                     className="flex h-7 px-2 items-center justify-center rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-xs font-bold text-red-700 transition"
-                                  >
-                                    মুছুন
-                                  </button>
+                                    confirmText="এই ছবি মুছে ফেলতে চান?"
+                                  />
                                 </form>
                               </div>
                             </div>
@@ -221,9 +224,15 @@ export default async function AdminProductPage() {
 
             {/* Add new variant */}
             <form action={addVariant} className="pt-2">
-              <button className="w-full min-h-12 rounded-2xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/30 hover:bg-indigo-50/70 text-indigo-700 font-bold text-sm transition duration-200 flex items-center justify-center gap-1.5">
-                <span>➕</span> নতুন কালার ভ্যারিয়েন্ট যোগ করুন
-              </button>
+              <SubmitButton
+                label={
+                  <span className="flex items-center justify-center gap-1.5">
+                    <span>➕</span> নতুন কালার ভ্যারিয়েন্ট যোগ করুন
+                  </span>
+                }
+                loadingLabel="যোগ করা হচ্ছে..."
+                className="w-full min-h-12 rounded-2xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/30 hover:bg-indigo-50/70 text-indigo-700 font-bold text-sm transition duration-200"
+              />
             </form>
           </div>
         </section>

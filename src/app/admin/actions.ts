@@ -44,7 +44,7 @@ function parseDiscountType(raw: FormDataEntryValue | null): "none" | "flat" | "p
 }
 
 export async function updateProductBasics(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   data.title = String(formData.get("title") ?? "").trim().slice(0, 120);
   data.description = String(formData.get("description") ?? "").trim().slice(0, 1000);
   data.basePrice = Math.max(0, Number(formData.get("basePrice") ?? 0));
@@ -62,7 +62,7 @@ export async function updateProductBasics(formData: FormData) {
 }
 
 export async function updateVariantData(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const variantIndex = Number(formData.get("variantIndex") ?? 0);
   const colorName = String(formData.get("colorName") ?? "").trim().slice(0, 50);
   const sizes = parseLines(String(formData.get("sizes") ?? ""));
@@ -111,7 +111,7 @@ export async function updateVariantData(formData: FormData) {
 }
 
 export async function addVariant() {
-  const data = await readProductData();
+  const data = await readProductData(true);
   data.variants.push({
     colorName: `Color ${data.variants.length + 1}`,
     sizes: ["M", "L"],
@@ -123,7 +123,7 @@ export async function addVariant() {
 }
 
 export async function removeVariant(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const variantIndex = Number(formData.get("variantIndex") ?? -1);
   if (variantIndex < 0 || variantIndex >= data.variants.length) return;
   if (data.variants.length <= 1) return;
@@ -135,7 +135,7 @@ export async function removeVariant(formData: FormData) {
 }
 
 export async function addFaq() {
-  const data = await readProductData();
+  const data = await readProductData(true);
   data.faqs.push({
     question: `নতুন প্রশ্ন ${data.faqs.length + 1}`,
     answer: "এখানে উত্তর লিখুন।"
@@ -146,7 +146,7 @@ export async function addFaq() {
 }
 
 export async function updateFaq(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const faqIndex = Number(formData.get("faqIndex") ?? -1);
   if (faqIndex < 0 || faqIndex >= data.faqs.length) return;
 
@@ -160,7 +160,7 @@ export async function updateFaq(formData: FormData) {
 }
 
 export async function removeFaq(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const faqIndex = Number(formData.get("faqIndex") ?? -1);
   if (faqIndex < 0 || faqIndex >= data.faqs.length) return;
   data.faqs.splice(faqIndex, 1);
@@ -174,7 +174,7 @@ function safeFileName(name: string): string {
 }
 
 export async function uploadVariantImage(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const variantIndex = Number(formData.get("variantIndex") ?? -1);
   const file = formData.get("imageFile");
   if (variantIndex < 0 || variantIndex >= data.variants.length) return;
@@ -217,7 +217,7 @@ export async function uploadVariantImage(formData: FormData) {
 }
 
 export async function removeVariantImage(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const variantIndex = Number(formData.get("variantIndex") ?? -1);
   const imageIndex = Number(formData.get("imageIndex") ?? -1);
 
@@ -246,7 +246,7 @@ export async function removeVariantImage(formData: FormData) {
 }
 
 export async function moveVariantImage(formData: FormData) {
-  const data = await readProductData();
+  const data = await readProductData(true);
   const variantIndex = Number(formData.get("variantIndex") ?? -1);
   const imageIndex = Number(formData.get("imageIndex") ?? -1);
   const direction = String(formData.get("direction") ?? "");

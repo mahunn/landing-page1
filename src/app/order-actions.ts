@@ -75,7 +75,7 @@ export async function placeOrderAction(
       return { error: "অর্ডার করার জন্য অন্তত ১টি পণ্য থাকতে হবে।" };
     }
 
-    const product = await readProductData();
+    const product = await readProductData(true);
     const unitPrice = calculateFinalPrice(product);
     const totalPrice = unitPrice * totalQuantity;
 

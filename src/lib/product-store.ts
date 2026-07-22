@@ -142,9 +142,9 @@ async function readProductFromDisk(): Promise<ProductData | null> {
   }
 }
 
-export async function readProductData(): Promise<ProductData> {
+export async function readProductData(bypassCache = false): Promise<ProductData> {
   if (useBlobJsonPersistence()) {
-    const fromBlob = await readTextBlob(PRODUCT_JSON_BLOB_PATH);
+    const fromBlob = await readTextBlob(PRODUCT_JSON_BLOB_PATH, bypassCache);
     if (fromBlob) {
       try {
         return normalizeProductData(JSON.parse(fromBlob) as Partial<ProductData>);

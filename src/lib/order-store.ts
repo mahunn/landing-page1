@@ -56,7 +56,7 @@ async function readOrdersFromDisk(): Promise<OrderData[] | null> {
 
 export async function readOrders(): Promise<OrderData[]> {
   if (useBlobJsonPersistence()) {
-    const fromBlob = await readTextBlob(ORDERS_JSON_BLOB_PATH);
+    const fromBlob = await readTextBlob(ORDERS_JSON_BLOB_PATH, true);
     if (fromBlob) {
       try {
         const parsed = JSON.parse(fromBlob) as OrderData[];

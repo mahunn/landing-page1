@@ -8,7 +8,7 @@ export default async function AdminCmsPage() {
   const authed = await isAuthenticated();
   if (!authed) redirect("/admin/login");
 
-  const product = await readProductData();
+  const product = await readProductData(true);
 
   return (
     <section className="space-y-4">

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { ProductData } from "@/lib/product-store";
+import { SubmitButton } from "./submit-button";
 
 function coerceDiscountType(v: string | undefined): ProductData["discountType"] {
   if (v === "flat" || v === "percent" || v === "none") return v;
@@ -137,7 +138,7 @@ export function ProductBasicsForm({ product, action }: ProductBasicsFormProps) {
         </a>
       </div>
 
-      <button className="admin-btn-primary">সেভ করুন</button>
+      <SubmitButton label="সেভ করুন" className="admin-btn-primary" />
     </form>
   );
 }

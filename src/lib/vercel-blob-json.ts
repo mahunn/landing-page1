@@ -13,13 +13,26 @@ function blobJsonAccess(): "public" | "private" {
   return process.env.BLOB_JSON_ACCESS === "private" ? "private" : "public";
 }
 
-export async function readTextBlob(pathname: string): Promise<string | null> {
+export async function readTextBlob(pathname: string, bypassCache = false): Promise<string | null> {
   try {
     const access = blobJsonAccess();
-    const result = await get(pathname, { access });
-    if (!result || result.statusCode === 304) return null;
-    if (!result.stream) return null;
-    return await new Response(result.stream).text();
+    if (access === "private") {
+      const result = await get(pathname, { access, ...(bypassCache ? { useCache: false } : {}) });
+      if (!result || result.statusCode === 304) return null;
+      if (!result.stream) return null;
+      return await new Response(result.stream).text();
+    } else {
+      const result = await get(pathname, { access });
+      if (!result) return null;
+      if (bypassCache && result.blob?.url) {
+        const res = await fetch(`${result.blob.url}?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) return null;
+        return await res.text();
+      } else {
+        if (!result.stream) return null;
+        return await new Response(result.stream).text();
+      }
+    }
   } catch (err) {
     console.warn(`[vercel-blob-json] Failed to read text blob "${pathname}":`, err);
     return null;
